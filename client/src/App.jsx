@@ -8,12 +8,25 @@ import Connections from './pages/Connections'
 import Discover from './pages/Discover'
 import Profile from './pages/Profile'
 import CreatePost from './pages/CreatePost'
-import {useUser} from '@clerk/clerk-react'
+import {useUser, useAuth} from '@clerk/clerk-react'
 import Layout from './pages/Layout'
 import {Toaster} from 'react-hot-toast'
 
 const App = () => {
   const { user } = useUser()
+  const { getToken } = useAuth();
+
+  useEffect(()=>{
+    const fetchData = async () => {
+      if(user){
+        const token = await getToken();
+        dispatch(fetchUser(token));
+        dispatch(fetchConnections(token));
+      }
+    }
+    fetchData();
+  },[user, getToken, dispatch])
+
   return (
     <>
     <Toaster/>
