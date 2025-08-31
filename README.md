@@ -3,6 +3,7 @@
 
 🔑 Features
   ⚡ Real-time feed with likes & comments
+  
   💬 Direct messaging & notifications
   👥 Follow/Unfollow system to build connections
   📸 Profile management with image uploads
