@@ -1,11 +1,10 @@
 🌐 Mitra – Full Stack Social Media Application
-
-       Mitra is a production-grade social media platform built with the MERN stack and modern web technologies.  It features real-time communication, secure authentication, event-driven automation, and responsive design, offering a complete social networking experience.
+🌐  Mitra is a production-grade social media platform built with the MERN stack and modern web technologies.  It features real-time communication, secure authentication, event-driven automation, and responsive design, offering a complete social networking experience.
 
 🔑 Features
 
   ⚡ Real-time feed with likes & comments
-    💬 Direct messaging & notifications
+  💬 Direct messaging & notifications
   👥 Follow/Unfollow system to build connections
   📸 Profile management with image uploads
   📱 Mobile-responsive design (works across devices)
