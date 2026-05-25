@@ -42,7 +42,7 @@ const ProfileModel = ({ setShowEdit }) => {
         }
     }
   return (
-    <div className='fixed top-0 bottom-0 left-0 right-0 z-110 h-screen overflow-y-scroll bg-black/50'>
+    <div className='fixed top-0 bottom-0 left-0 right-0 z-[110] h-screen overflow-y-scroll bg-black/50'>
         <div className='max-w-2xl sm:py-6 mx-auto'>
             <div className='bg-white rounded-lg shadow p-6'>
                 <h1 className='text-2xl font-bold text-gray-900 mb-6'>Edit Profile</h1>

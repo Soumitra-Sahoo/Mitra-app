@@ -21,7 +21,7 @@ export const sseController = (req, res) => {
     connections[userId] = res;
 
     // Send an initial event to the client
-    res.write('log: Connected to SSE stream\n\n');
+    res.write('data: Connected\n\n');
 
     // Handle client disconnection
     req.on('close', () => {

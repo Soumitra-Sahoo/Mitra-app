@@ -19,11 +19,11 @@ const Login = () => {
             <div className='flex'>
               {Array(5).fill(0).map((_, i) => (<Star key={i} className='size-4 md:size-4.5 text-transparent fill-amber-500'/>))}
             </div>
-            <p>Devloped by Soumitra</p>
+            <p>Developed by Soumitra</p>
           </div>
         </div>
         <h1 className='text-3xl md:text-6xl md:pb-2 font-bold text-blue-700'>Make relation and bonding with yours</h1>
-        <p className='text-xl md:text-3xl text-blue-900 max-w-72 md:max-w-md'>Conncet with Mitra App</p>
+        <p className='text-xl md:text-3xl text-blue-900 max-w-72 md:max-w-md'>Connect with Mitra App</p>
       </div>
       <span className='md:h-10'></span>
       </div>

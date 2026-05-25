@@ -202,7 +202,7 @@ export const sendConnectionReqest = async (req, res) => {
             })
 
             await inngest.send({
-                name: 'app/conection-request',
+                name: 'app/connection-request',
                 data: { connectionId: newConnection._id }
             })
             

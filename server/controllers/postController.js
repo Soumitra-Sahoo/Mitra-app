@@ -12,7 +12,7 @@ export const addPost = async (req, res) => {
 
         let image_urls = [];
 
-        if(images.length){
+        if(images && images.length){
             image_urls = await Promise.all(
                 images.map( async (image) => {
                     const fileBuffer = fs.readFileSync(image.path);

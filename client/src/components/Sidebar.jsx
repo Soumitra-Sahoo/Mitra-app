@@ -1,4 +1,4 @@
-import React, { use } from 'react'
+import React from 'react'
 import { assets, dummyUserData } from '../assets/assets'
 import { Link, useNavigate } from 'react-router-dom'
 import MenuItems from './MenuItems';
@@ -31,8 +31,8 @@ const Sidebar = ({sidebarOpen , setSidebarOpen}) => {
         <div className='flex gap-2 items-center cursor-pointer'>
           <UserButton />
           <div>
-            <h1 className='text-sm font-medium'>{user.full_name}</h1>
-            <p className='text-xs text-gray-500'>@{user.username}</p>
+            <h1 className='text-sm font-medium'>{user?.full_name}</h1>
+            <p className='text-xs text-gray-500'>@{user?.username}</p>
             </div>
         </div>
         <LogOut onClick={signOut}

@@ -10,8 +10,9 @@ export const inngest = new Inngest({ id: "Mitra-app" });
 
 // Inngest Function to create user data to a database
 const syncUserCreation = inngest.createFunction(
-    {id: 'sync-user-from-clerk'},
-    {event: 'clerk/user.created'},
+    {id: 'sync-user-from-clerk',
+    event: 'clerk/user.created',
+    },
     async ({event}) => {
         const { id, first_name, last_name, email_addresses, image_url } = event.data;
         let username = email_addresses[0].email_address.split('@')[0];
@@ -36,8 +37,9 @@ const syncUserCreation = inngest.createFunction(
 
 // Inngest Function to update user data to a database
 const syncUserUpdation = inngest.createFunction(
-    {id: 'update-user-from-clerk'},
-    {event: 'clerk/user.updated'},
+    {id: 'update-user-from-clerk',
+    event: 'clerk/user.updated',
+    },
     async ({event}) => {
         const { id, first_name, last_name, email_addresses, image_url } = event.data;
         
@@ -53,8 +55,9 @@ const syncUserUpdation = inngest.createFunction(
 
 // Inngest Function to delete user data to a database
 const syncUserdeletion = inngest.createFunction(
-    {id: 'delete-user-with-clerk'},
-    {event: 'clerk/user.deleted'},
+    {id: 'delete-user-with-clerk',
+    event: 'clerk/user.deleted',
+    },
     async ({event}) => {
         const { id } = event.data;
         await User.findByIdAndDelete(id);
@@ -63,8 +66,9 @@ const syncUserdeletion = inngest.createFunction(
 
 // Inngest function to send reminder when a new connection request is added
 const sendNewConnectionRequestReminder = inngest.createFunction(
-    {id: "send-new-connection-request-reminder"},
-    {event: "app/conection-request"},
+    {id: "send-new-connection-request-reminder",
+    event: "app/connection-request",
+    },
     async ({event, step}) => {
         const { connectionId } = event.data;
 
@@ -74,9 +78,9 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
             const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
                                 <h2>Hi ${connection.to_user_id.full_name},</h2>
                                 <p>You have a new connection request from ${connection.from_user_id.full_name} . @${connection.from_user_id.username}</p>
-                                <p>Click <a href={"${process.env.FRONTEND_URL}/connections"} style="color: #10b981;">here</a> to accept or reject the request</p>
+                                <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">here</a> to accept or reject the request</p>
                                 <br />
-                                <p>Thanks,<br />Pingup . Stay Connected</p>
+                                <p>Thanks,<br />PingUp - Stay Connected</p>
                             </div>`;
 
             await sendEmail({
@@ -99,7 +103,7 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
             const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
                                 <h2>Hi ${connection.to_user_id.full_name},</h2>
                                 <p>You have a new connection request from ${connection.from_user_id.full_name} . @${connection.from_user_id.username}</p>
-                                <p>Click <a href={"${process.env.FRONTEND_URL}/connections"} style="color: #10b981;">here</a> to accept or reject the request</p>
+                                <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">here</a> to accept or reject the request</p>
                                 <br />
                                 <p>Thanks,<br />PingUp - Stay Connected</p>
                             </div>`;
@@ -117,8 +121,9 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
 
 // Inngest function to delete story after 24 hours
 const deleteStory = inngest.createFunction(
-    {id: 'story-delete'},
-    {event: 'app/story.delete'},
+    {id: 'story-delete',
+    event: 'app/story.delete',
+    },
     async ({event, step}) => {
         const { storyId } = event.data;
         const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -132,8 +137,8 @@ const deleteStory = inngest.createFunction(
 
 
 const sendNotificationOfUnseenMessages = inngest.createFunction(
-    {id: "send-unseen-messages-notification"},
-    {cron: "TZ=America/New_York 0 9 * * *"}, // Every day 9 AM
+    {id: "send-unseen-messages-notification",
+    cron: "TZ=America/New_York 0 9 * * *"}, // Every day 9 AM
     async ({step}) => {
         const message = await Message.find({seen: false}).populate('to_user_id');
         const unseenCount = {};
@@ -142,7 +147,7 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
             unseenCount[message.to_user_id._id] = (unseenCount[message.to_user_id._id] || 0) + 1;
         })
 
-        for(const userId in Object){
+        for(const userId in unseenCount){
             const user = await User.findById(userId);
 
             const subject = `You have ${unseenCount[userId]} unseen messages`;
@@ -150,7 +155,7 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
             const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
                             <h2>Hi ${user.full_name},</h2>
                             <p>You have ${unseenCount[userId]} unseen messages</p>
-                            <p>Click <a href={"${process.env.FRONTEND_URL}/messages"} style="color: #10b981;">here</a> to view them</p>
+                            <p>Click <a href="${process.env.FRONTEND_URL}/messages" style="color: #10b981;">here</a> to view them</p>
                             <br />
                             <p>Thanks,<br />PingUp - Stay Connected</p>
                         </div>`;

@@ -44,8 +44,7 @@ const CreatePost = () => {
         throw new Error(data.message);
       }
     } catch (error) {
-      console.log(error.message);
-        throw new Error(error.message);
+        toast.error(error.message);
     }
   }
 
