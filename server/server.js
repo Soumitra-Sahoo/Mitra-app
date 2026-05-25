@@ -16,7 +16,7 @@ await connectDB();
 
 app.use(express.json());
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: "https://mitra-app.vercel.app",
     credentials: true
 }));
 app.use(clerkMiddleware());
