@@ -24,7 +24,18 @@ const messagesSlice = createSlice({
         },
         resetMessages: (state) => {
             state.messages = [];
+        },
+        markMessagesSeen: (state, action) => {
+    state.messages = state.messages.map(message => {
+        if(message.to_user_id === action.payload){
+            return {
+                ...message,
+                seen: true
+            }
         }
+        return message;
+    })
+},
     },
     extraReducers: (builder) => {
         builder.addCase(fetchMessages.fulfilled, (state, action) => {
@@ -36,6 +47,6 @@ const messagesSlice = createSlice({
 })
 
 
-export const { setMessages, addMessage, resetMessages } = messagesSlice.actions;
+export const { setMessages, addMessage, resetMessages, markMessagesSeen } = messagesSlice.actions;
 
 export default messagesSlice.reducer;

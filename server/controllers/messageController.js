@@ -66,6 +66,7 @@ export const sendMessage = async (req, res) => {
       text,
       message_type,
       media_url,
+      delivered: !!connections[to_user_id]
     });
 
     res.json({ success: true, message });
@@ -104,6 +105,16 @@ export const getChatMessages = async (req, res) => {
       { from_user_id: to_user_id, to_user_id: userId },
       { seen: true },
     );
+    // Notify sender that messages were seen
+        if (connections[to_user_id]) {
+            connections[to_user_id].write(
+                `data: ${JSON.stringify({
+                    type: "seen",
+                    by: userId
+                })}\n\n`
+            );
+        }
+        
     res.json({ success: true, messages });
   } catch (error) {
     console.log(error);

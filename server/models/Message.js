@@ -6,6 +6,7 @@ const messageSchema = new mongoose.Schema({
     text: {type: String, trim: true},
     message_type: {type: String, enum: ['text', 'image']},
     media_url: {type: String},
+    delivered: { type: Boolean, default: false },
     seen: {type: Boolean, default: false},
 }, {timestamps: true, minimize: false});
 
