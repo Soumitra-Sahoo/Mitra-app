@@ -156,10 +156,10 @@ const ChatBox = () => {
                           }`}
                         >
                           {message.seen
-                            ? "✓✓ Seen"
+                            ? "✓✓ "
                             : message.delivered
-                              ? "✓ Delivered"
-                              : "✓ Sent"}
+                              ? "✓ "
+                              : "✓ "}
                         </div>
                       )}
                     </div>
