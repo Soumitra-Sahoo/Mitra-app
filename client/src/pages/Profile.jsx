@@ -131,16 +131,12 @@ const Profile = () => {
       {/* Likes */}
       {activeTab === "likes" && (
         <div className="mt-6 flex flex-col items-center gap-6">
-          {posts.filter((post) => post.likes_count.includes(user._id))
-            .length === 0 && (
+          {likedPosts.length === 0 && (
             <p className="text-gray-500 mt-10">No liked posts yet</p>
           )}
-
-          {posts
-            .filter((post) => post.likes_count.includes(user._id))
-            .map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
+          {likedPosts.map((post) => (
+            <PostCard key={post._id} post={post} />
+          ))}
         </div>
       )}
 
