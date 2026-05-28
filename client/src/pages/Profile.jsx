@@ -49,6 +49,10 @@ const Profile = () => {
     }
   }, [profileId, currentUser]);
 
+  const likedPosts = posts.filter(post =>
+  post.likes_count.includes(user._id)
+);
+
   return user ? (
     <div className=" relative h-full overflow-y-scroll bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
