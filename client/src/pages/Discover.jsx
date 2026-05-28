@@ -100,7 +100,7 @@ const Discover = () => {
         </div>
 
         {/* Search */}
-        <div className="mb-10 shadow-md rounded-xl border border-slate-200/60 bg-white/80">
+        <div className="sticky top-0 z-20 mb-10 shadow-md rounded-xl border border-slate-200/60 bg-white/90 backdrop-blur-md">
           <div className="p-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 size-5" />
@@ -122,7 +122,7 @@ const Discover = () => {
           <>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold text-slate-900">
-                🔥 Trending Users
+               Trending Users
               </h2>
 
               <p className="text-sm text-slate-500">
@@ -130,7 +130,7 @@ const Discover = () => {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {users.slice(0, 6).map((user) => (
                 <UserCard key={user._id} user={user} />
               ))}
