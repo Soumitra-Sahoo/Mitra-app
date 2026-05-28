@@ -53,7 +53,7 @@ const UserCard = ({ user }) => {
     }
 
   return (
-    <div key={user._id} className='p-4 pt-6 flex flex-col justify-between w-72 shadow border border-gray-200 rounded-md'>
+    <div key={user._id} className='w-full sm:w-[300px] p-4 pt-6 flex flex-col justify-between shadow border border-gray-200 rounded-md  bg-white hover:shadow-xl transition duration-300'>
         <div className='text-center'>
             <img src={user.profile_picture} className='aspect-square object-cover rounded-full w-16 shadow-md mx-auto' alt="" />
             <p className='mt-4 font-semibold'>{user.full_name}</p>
