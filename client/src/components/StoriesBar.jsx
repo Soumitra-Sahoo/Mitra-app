@@ -9,9 +9,7 @@ import api from '../api/axios.js';
 import toast from 'react-hot-toast';
 
 const StoriesBar = () => {
-
     const { getToken } = useAuth();
-
     const [stories, setStories] = useState([]);
     const [showModel, setShowModel] = useState(false);
     const [viewStory, setViewStory] = useState(false);
@@ -31,14 +29,12 @@ const StoriesBar = () => {
             toast.error(error.message);
         }
     }
-
     useEffect(()=>{
         fetchStories();
     }, []);
 
   return (
     <div className='w-screen sm:w-[calc(100vw-240px)] lg:max-w-2xl no-scrollbar overflow-x-auto px-4'>
-
         <div className='flex gap-4 pb-5'>
             {/* Add Story card */}
             <div onClick={()=>setShowModel(true)} className='rounded-lg shadow-sm min-w-30 max-w-30 max-h-40 aspect-[3/4] cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-dashed border-indigo-300 bg-gradient-to-b from-indigo-50 to-white'>
@@ -49,7 +45,6 @@ const StoriesBar = () => {
                     <p className='text-sm font-medium text-slate-700 text-center'>Create Story</p>
                 </div>
             </div>
-
             {/* Story Cards */}
             {
                 stories.map((story, index) => (
@@ -73,13 +68,9 @@ const StoriesBar = () => {
                 ))
             }
         </div>
-        
-        {/* Add Story Model */}
         {
             showModel && <StoryModel setShowModel={setShowModel} fetchStories={fetchStories}/>
         }
-
-        {/* View Story Model */}
         {
             viewStory && <StoryViewer viewStory={viewStory} setViewStory={setViewStory}/>
         }

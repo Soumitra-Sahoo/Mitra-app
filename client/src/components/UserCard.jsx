@@ -68,7 +68,6 @@ const UserCard = ({ user }) => {
                 <span>{user.followers.length}</span> Followers
             </div>
         </div>
-
         <div className='flex mt-4 gap-2'>
             {/* Follow Button */}
             <button onClick={handleFollow} disabled={currentUser?.following.includes(user._id)} className='w-full py-2 rounded-md flex justify-center items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer'>

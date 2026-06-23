@@ -14,10 +14,12 @@
   "dependencies": {
     "@clerk/express": "^1.7.26",
     "cors": "^2.8.5",
+    "dompurify": "^3.4.11",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "imagekit": "^6.0.0",
     "inngest": "^4.4.0",
+    "jsdom": "^29.1.1",
     "mongoose": "^8.17.2",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5"

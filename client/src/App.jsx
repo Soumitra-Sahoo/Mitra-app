@@ -51,24 +51,16 @@ const App = () => {
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
-        // Ignore initial connection event
         if (data.type === "connected") {
           return;
         }
-
-        // Seen event
         if (data.type === "seen") {
           dispatch(markMessagesSeen(data.by));
           return;
         }
-
-        // Ignore invalid events
         if (!data?.from_user_id?._id) {
           return;
         }
-
-        // Normal message
         if (pathnameRef.current === "/messages/" + data.from_user_id._id) {
           dispatch(addMessage(data));
         } else {
