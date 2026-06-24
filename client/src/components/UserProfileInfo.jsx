@@ -6,7 +6,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
   return (
     <div className="relative px-8 pb-8 pt-6 bg-white/80 backdrop-blur-lg">
       <div className="flex flex-col md:flex-row items-start gap-6">
-        <div className="size-40 border-4 border-white shadow-2xl absolute -top-20 rounded-full overflow-hidden ring-4 ring-blue-100 bg-white">
+        <div className="size-40 border-4 border-white shadow-2xl absolute -top-10 rounded-full overflow-hidden ring-4 bg-white">
           <img
             src={user.profile_picture}
             className="w-full h-full object-cover rounded-full"
@@ -14,7 +14,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
           />
         </div>
 
-        <div className="w-full pt-16 md:pt-0 md:pl-36">
+        <div className="w-full pt-16 md:pt-10 md:pl-44">
           <div className="flex flex-col md:flex-row items-start justify-between">
             <div>
               <div className="flex items-center gap-3">
