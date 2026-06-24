@@ -49,17 +49,18 @@ const Profile = () => {
     }
   }, [profileId, currentUser]);
 
-  const likedPosts = posts.filter(post =>
-  post.likes_count.includes(user._id)
-);
+  const likedPosts = posts.filter((post) =>
+    post.likes_count.includes(user._id),
+  );
 
   return user ? (
     <div className=" relative h-full overflow-y-scroll bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
         {/* Profile Card */}
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden ">
           {/* Cover Photo */}
-          <div className="h-40 md:h-56 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
+          <div className="relative h-56 md:h-72 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 z-10"></div>
             {user.cover_photo && (
               <img
                 src={user.cover_photo}
@@ -67,7 +68,6 @@ const Profile = () => {
               />
             )}
           </div>
-
           {/* User Info */}
           <UserProfileInfo
             user={user}
