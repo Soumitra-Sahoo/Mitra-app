@@ -84,7 +84,7 @@ const Discover = () => {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* Fixed Top Section */}
       <div className="p-6 pb-4 bg-gradient-to-b from-slate-50 to-white z-20">
         {/* Title */}

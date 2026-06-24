@@ -1,10 +1,28 @@
 import React from 'react'
 
-const Loading = ({height= '100vh'}) => {
+const Loading = () => {
   return (
-    <div style={{height}} className='flex items-center justify-center h-screen'>
-      <div className='w-10 h-10 rounded-full border-3 border-purple-500 
-      border-t-transparent animate-spin'></div>
+    <div className='p-6 space-y-6'>
+      {[1,2,3].map((item) => (
+        <div
+          key={item}
+          className='bg-white rounded-3xl p-5 animate-pulse shadow'
+        >
+          <div className='flex gap-3 items-center'>
+            <div className='w-12 h-12 rounded-full bg-slate-200'></div>
+
+            <div>
+              <div className='w-32 h-4 bg-slate-200 rounded'></div>
+              <div className='w-20 h-3 bg-slate-100 rounded mt-2'></div>
+            </div>
+          </div>
+
+          <div className='h-4 bg-slate-200 rounded mt-5'></div>
+          <div className='h-4 bg-slate-200 rounded mt-3'></div>
+
+          <div className='h-64 bg-slate-200 rounded-2xl mt-5'></div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -68,12 +68,8 @@ const StoriesBar = () => {
                 ))
             }
         </div>
-        {
-            showModel && <StoryModel setShowModel={setShowModel} fetchStories={fetchStories}/>
-        }
-        {
-            viewStory && <StoryViewer viewStory={viewStory} setViewStory={setViewStory}/>
-        }
+        {showModel && <StoryModel setShowModel={setShowModel} fetchStories={fetchStories}/> }
+        {viewStory && <StoryViewer viewStory={viewStory} setViewStory={setViewStory}/> }
     </div>
   )
 }

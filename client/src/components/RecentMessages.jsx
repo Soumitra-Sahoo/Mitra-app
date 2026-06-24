@@ -18,7 +18,6 @@ const RecentMessages = () => {
                 headers: {Authorization: `Bearer ${token}`}
             })
             if(data.success){
-                // Group message by sender and get the latest message for each sender
                 const groupedMessages = data.messages.reduce((acc, message)=>{
                     const senderId = message.from_user_id._id;
                     if(!acc[senderId] || new Date(message.createdAt) > new Date(acc[senderId].createdAt)){
@@ -27,9 +26,7 @@ const RecentMessages = () => {
                     return acc;
                 }, {})
 
-                // Sort messages by date
                 const sortedMessages = Object.values(groupedMessages).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
                 setMessages(sortedMessages)
             }else{
                 toast.error(data.message);
@@ -46,7 +43,6 @@ const RecentMessages = () => {
             return () => clearInterval(interval);
         }
     },[user]);
-
 
   return (
     <div className='bg-white max-w-xs mt-4 p-4 min-h-20 rounded-md shadow text-xs text-slate-800'>

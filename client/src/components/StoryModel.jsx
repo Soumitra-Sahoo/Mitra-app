@@ -16,8 +16,8 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
 
     const { getToken } = useAuth();
 
-    const MAX_VIDEO_DURATION = 60; // seconds
-    const MAX_VIDEO_SIZE_MB = 50; // MB 
+    const MAX_VIDEO_DURATION = 60; 
+    const MAX_VIDEO_SIZE_MB = 50;  
 
     const handleMediaUpload = (e) => {
         const file = e.target.files?.[0];
@@ -56,11 +56,9 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
 
     const handleCreateStory = async () => {
         const media_type = mode === 'media' ? media?.type.startsWith('image') ? 'image' : "video" : "text";
-
         if(media_type === "text" && !text){
             throw new Error('Please enter some text');
         }
-
         let formData = new FormData();
         formData.append('content', text);
         formData.append('media_type', media_type);
@@ -126,7 +124,6 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
                     <Upload size={18}/> Photo/Video
                 </label>
             </div>
-
             <button onClick={()=>toast.promise(handleCreateStory(), {
                 loading: 'Saving...',})} className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer'>
                 <Sparkle size={18}/> Create Story
