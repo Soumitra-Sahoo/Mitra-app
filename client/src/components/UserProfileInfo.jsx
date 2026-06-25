@@ -14,7 +14,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
           />
         </div>
 
-        <div className="w-full pt-16 md:pt-10 md:pl-44">
+        <div className="w-full pt-16 md:pt-10 md:pl-36">
           <div className="flex flex-col md:flex-row items-start justify-between">
             <div>
               <div className="flex items-center gap-3">
