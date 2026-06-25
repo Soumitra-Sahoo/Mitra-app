@@ -1,22 +1,298 @@
-import { BadgeCheck, Heart, MessageCircle, Share2 } from "lucide-react";
-import React, { useState } from "react";
+import {
+  BadgeCheck,
+  Heart,
+  MessageCircle,
+  Share2,
+  X,
+  Send,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
+const Lightbox = ({ images, startIndex, onClose }) => {
+  const [current, setCurrent] = useState(startIndex);
+  const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
+  const next = () => setCurrent((c) => (c + 1) % images.length);
 
-const PostCard = ({ post }) => {
-  const postWithHashtags = post.content?.replace(
-    /(#\w+)/g,
-    '<span class="text-indigo-600">$1</span>',
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+      >
+        <X className="size-6" />
+      </button>
+      {images.length > 1 && (
+        <span className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+          {current + 1} / {images.length}
+        </span>
+      )}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+            className="absolute left-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition text-2xl"
+          >
+            ‹
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+            className="absolute right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition text-2xl"
+          >
+            ›
+          </button>
+        </>
+      )}
+      <img
+        src={images[current]}
+        alt=""
+        className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
   );
-  const [likes, setLikes] = useState(post.likes_count);
-  const currentUser = useSelector((state) => state.user.value);
+};
 
+const CommentItem = ({
+  comment,
+  postId,
+  currentUser,
+  token,
+  onDelete,
+  depth = 0,
+}) => {
+  const [showReplies, setShowReplies] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [liked, setLiked] = useState(comment.likes?.includes(currentUser?._id));
+  const [likesCount, setLikesCount] = useState(comment.likes?.length || 0);
+
+  const handleLikeComment = async () => {
+    try {
+      const { data } = await api.post(
+        `/api/comment/like/${comment._id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (data.success) {
+        setLiked(data.liked);
+        setLikesCount(data.likesCount);
+      }
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
+  const handleReply = async () => {
+    if (!replyText.trim()) return;
+    try {
+      const { data } = await api.post(
+        "/api/comment/add",
+        {
+          post_id: postId,
+          text: replyText,
+          parent_id: comment._id,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (data.success) {
+        toast.success("Reply added");
+        setReplyText("");
+        setShowReplyBox(false);
+        setShowReplies(true);
+      } else toast.error(data.message);
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
+  return (
+    <div className={`flex gap-2 ${depth > 0 ? "ml-8 mt-2" : "mt-3"}`}>
+      <img
+        src={comment.user_id?.profile_picture}
+        className="size-7 rounded-full object-cover flex-shrink-0 mt-0.5"
+        alt=""
+      />
+      <div className="flex-1">
+        <div className="bg-slate-50 rounded-2xl px-3 py-2">
+          <p className="text-xs font-semibold text-slate-800">
+            {comment.user_id?.full_name}
+          </p>
+          <p className="text-sm text-slate-700 mt-0.5">{comment.text}</p>
+        </div>
+        <div className="flex items-center gap-3 mt-1 px-1 text-xs text-slate-400">
+          <span>{moment(comment.createdAt).fromNow()}</span>
+          <button
+            onClick={handleLikeComment}
+            className={`flex items-center gap-1 hover:text-red-500 transition ${liked ? "text-red-500" : ""}`}
+          >
+            <Heart
+              className={`size-3 ${liked ? "fill-red-500 text-red-500" : ""}`}
+            />
+            {likesCount > 0 && <span>{likesCount}</span>}
+          </button>
+          {depth === 0 && (
+            <button
+              onClick={() => setShowReplyBox((v) => !v)}
+              className="hover:text-indigo-600 transition"
+            >
+              Reply
+            </button>
+          )}
+          {comment.user_id?._id === currentUser?._id && (
+            <button
+              onClick={() => onDelete(comment._id)}
+              className="hover:text-red-500 transition"
+            >
+              <Trash2 className="size-3" />
+            </button>
+          )}
+        </div>
+
+        {/* Reply input */}
+        {showReplyBox && (
+          <div className="flex items-center gap-2 mt-2 ml-1">
+            <input
+              type="text"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleReply()}
+              placeholder="Write a reply..."
+              className="flex-1 text-xs border border-slate-200 rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-400"
+            />
+            <button
+              onClick={handleReply}
+              className="text-indigo-600 hover:text-indigo-800"
+            >
+              <Send className="size-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Nested replies */}
+        {comment.replies?.length > 0 && (
+          <button
+            onClick={() => setShowReplies((v) => !v)}
+            className="text-xs text-indigo-600 mt-1 flex items-center gap-1 hover:underline"
+          >
+            {showReplies ? (
+              <ChevronUp className="size-3" />
+            ) : (
+              <ChevronDown className="size-3" />
+            )}
+            {showReplies ? "Hide" : `View ${comment.replies.length}`}{" "}
+            {comment.replies.length === 1 ? "reply" : "replies"}
+          </button>
+        )}
+        {showReplies &&
+          comment.replies?.map((reply) => (
+            <CommentItem
+              key={reply._id}
+              comment={reply}
+              postId={postId}
+              currentUser={currentUser}
+              token={token}
+              onDelete={onDelete}
+              depth={depth + 1}
+            />
+          ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Post Detail Modal ──────────────────────────────────────────────────────────
+const PostModal = ({ post, onClose, currentUser, getToken }) => {
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [likes, setLikes] = useState(post.likes_count);
   const navigate = useNavigate();
-  const { getToken } = useAuth();
+
+  const fetchComments = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.get(`/api/comment/${post._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data.success) setComments(data.comments);
+    } catch (e) {
+      toast.error(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/comment/add",
+        { post_id: post._id, text: commentText },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (data.success) {
+        setCommentText("");
+        setComments((prev) => [{ ...data.comment, replies: [] }, ...prev]);
+      } else toast.error(data.message);
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      const token = await getToken();
+      const { data } = await api.delete(`/api/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data.success) {
+        setComments((prev) => prev.filter((c) => c._id !== commentId));
+        toast.success("Deleted");
+      }
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -28,93 +304,326 @@ const PostCard = ({ post }) => {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-
       if (data.success) {
-        toast.success(data.message);
-        setLikes((prev) => {
-          if (prev.includes(currentUser?._id)) {
-            return prev.filter((id) => id !== currentUser?._id);
-          } else {
-            return [...prev, currentUser?._id];
-          }
-        });
-      } else {
-        toast(data.message);
+        setLikes((prev) =>
+          prev.includes(currentUser?._id)
+            ? prev.filter((id) => id !== currentUser?._id)
+            : [...prev, currentUser?._id],
+        );
       }
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
+  const postWithHashtags = post.content?.replace(
+    /(#\w+)/g,
+    '<span class="text-indigo-600 cursor-pointer hover:underline">$1</span>',
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Left: Images */}
+        {post.image_urls?.length > 0 && (
+          <div className="md:w-1/2 bg-black flex items-center justify-center max-h-[50vh] md:max-h-none">
+            <img
+              src={post.image_urls[0]}
+              alt=""
+              className="w-full h-full object-contain"
+            />
+          </div>
+        )}
+
+        {/* Right: Info + Comments */}
+        <div
+          className={`flex flex-col flex-1 ${post.image_urls?.length > 0 ? "md:w-1/2" : "w-full"}`}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-slate-100">
+            <div
+              onClick={() => {
+                navigate(`/profile/${post.user._id}`);
+                onClose();
+              }}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <img
+                src={post.user.profile_picture}
+                className="size-9 rounded-full object-cover"
+                alt=""
+              />
+              <div>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-sm">
+                    {post.user.full_name}
+                  </span>
+                  <BadgeCheck className="size-4 text-blue-500" />
+                </div>
+                <p className="text-xs text-gray-400">
+                  @{post.user.username} · {moment(post.createdAt).fromNow()}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-700 transition"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          {post.content && (
+            <div className="px-4 py-3 border-b border-slate-100">
+              <p
+                className="text-sm text-gray-800"
+                dangerouslySetInnerHTML={{ __html: postWithHashtags }}
+              />
+            </div>
+          )}
+
+          {/* Comments list */}
+          <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+            {loading && (
+              <p className="text-center text-sm text-slate-400 mt-4">
+                Loading comments...
+              </p>
+            )}
+            {!loading && comments.length === 0 && (
+              <p className="text-center text-sm text-slate-400 mt-8">
+                No comments yet. Be the first!
+              </p>
+            )}
+            {comments.map((comment) => (
+              <CommentItem
+                key={comment._id}
+                comment={comment}
+                postId={post._id}
+                currentUser={currentUser}
+                token={null}
+                onDelete={handleDeleteComment}
+              />
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="border-t border-slate-100 p-4">
+            <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+              <button
+                onClick={handleLike}
+                className="flex items-center gap-1 hover:text-red-500 transition"
+              >
+                <Heart
+                  className={`size-5 ${likes.includes(currentUser?._id) ? "text-red-500 fill-red-500" : ""}`}
+                />
+                <span>{likes.length}</span>
+              </button>
+              <div className="flex items-center gap-1">
+                <MessageCircle className="size-5" />
+                <span>{comments.length}</span>
+              </div>
+            </div>
+            {/* Add comment */}
+            <div className="flex items-center gap-2">
+              <img
+                src={currentUser?.profile_picture}
+                className="size-8 rounded-full object-cover"
+                alt=""
+              />
+              <div className="flex-1 flex items-center border border-slate-200 rounded-full overflow-hidden px-3">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+                  placeholder="Add a comment..."
+                  className="flex-1 py-2 text-sm outline-none"
+                />
+                <button
+                  onClick={handleAddComment}
+                  className="text-indigo-600 hover:text-indigo-800 transition pl-2"
+                >
+                  <Send className="size-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main PostCard ──────────────────────────────────────────────────────────────
+const PostCard = ({ post }) => {
+  const postWithHashtags = post.content?.replace(
+    /(#\w+)/g,
+    '<span class="text-indigo-600 cursor-pointer hover:underline" data-tag="$1">$1</span>',
+  );
+  const [likes, setLikes] = useState(post.likes_count);
+  const [commentCount, setCommentCount] = useState(post.comments_count ?? 0);
+  const [showModal, setShowModal] = useState(false);
+  const [lightbox, setLightbox] = useState({ open: false, index: 0 });
+
+  const currentUser = useSelector((state) => state.user.value);
+  const navigate = useNavigate();
+  const { getToken } = useAuth();
+
+  // Fetch real comment count on mount
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const token = await getToken();
+        const { data } = await api.get(`/api/comment/count/${post._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data.success) setCommentCount(data.count);
+      } catch (_) {}
+    };
+    load();
+  }, [post._id]);
+
+  const handleLike = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/post/like",
+        { postId: post._id },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (data.success) {
+        setLikes((prev) =>
+          prev.includes(currentUser?._id)
+            ? prev.filter((id) => id !== currentUser?._id)
+            : [...prev, currentUser?._id],
+        );
+      } else toast(data.message);
     } catch (error) {
       toast.error(error.message);
     }
   };
 
-  return (
-    <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
-      {/* User Info */}
-      <div
-        onClick={() => navigate(`/profile/${post.user._id}`)}
-        className="inline-flex items-center gap-3 cursor-pointer"
-      >
-        <img
-          src={post.user.profile_picture}
-          alt=""
-          className="aspect-square object-cover w-10 h-10 rounded-full shadow"
-        />
-        <div>
-          <div className="flex items-center space-x-1">
-            <span className="font-semibold text-slate-800">
-              {post.user.full_name}
-            </span>
-            <BadgeCheck className="size-4 text-blue-500" />
-          </div>
-          <div className="text-gray-500 text-sm">
-            @{post.user.username} • {moment(post.createdAt).fromNow()}
-          </div>
-        </div>
-      </div>
+  // Handle hashtag click from dangerouslySetInnerHTML
+  const handleContentClick = (e) => {
+    const tag = e.target.getAttribute("data-tag");
+    if (tag) navigate(`/hashtag/${tag.replace("#", "")}`);
+  };
 
-      {/* Content */}
-      {post.content && (
-        <div
-          className="text-gray-800 text-sm whitespace-pre-line"
-          dangerouslySetInnerHTML={{ __html: postWithHashtags }}
+  const handleShare = async () => {
+    const url = `${window.location.origin}/profile/${post.user._id}`;
+    if (navigator.share) {
+      await navigator.share({ title: post.user.full_name, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
+  return (
+    <>
+      {lightbox.open && (
+        <Lightbox
+          images={post.image_urls}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox({ open: false, index: 0 })}
+        />
+      )}
+      {showModal && (
+        <PostModal
+          post={post}
+          onClose={() => setShowModal(false)}
+          currentUser={currentUser}
+          getToken={getToken}
         />
       )}
 
-      {/* Images */}
-      <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-2xl">
-        {post.image_urls.map((img, index) => (
+      <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
+        {/* User Info */}
+        <div
+          onClick={() => navigate(`/profile/${post.user._id}`)}
+          className="inline-flex items-center gap-3 cursor-pointer"
+        >
           <img
-            key={index}
-            src={img}
-            className={`w-full bg-slate-100 rounded-xl
-      ${
-        post.image_urls.length === 1
-          ? "max-h-[500px] object-contain"
-          : "h-64 object-cover"
-      }`}
+            src={post.user.profile_picture}
             alt=""
+            className="aspect-square object-cover w-10 h-10 rounded-full shadow"
           />
-        ))}
-      </div>
+          <div>
+            <div className="flex items-center space-x-1">
+              <span className="font-semibold text-slate-800">
+                {post.user.full_name}
+              </span>
+              <BadgeCheck className="size-4 text-blue-500" />
+            </div>
+            <div className="text-gray-500 text-sm">
+              @{post.user.username} • {moment(post.createdAt).fromNow()}
+            </div>
+          </div>
+        </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-4 text-gray-600 text-sm pt-2 border-t border-gray-300">
-        <div className="flex items-center gap-1">
-          <Heart
-            className={`size-4 cursor-pointer ${likes.includes(currentUser?._id) && "text-red-500 fill-red-500"}`}
-            onClick={handleLike}
+        {/* Content */}
+        {post.content && (
+          <div
+            className="text-gray-800 text-sm whitespace-pre-line"
+            dangerouslySetInnerHTML={{ __html: postWithHashtags }}
+            onClick={handleContentClick}
           />
-          <span>{likes.length}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <MessageCircle className="size-4" />
-          <span>{3}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Share2 className="size-4" />
-          <span>{9}</span>
+        )}
+
+        {/* Images — click opens lightbox */}
+        {post.image_urls?.length > 0 && (
+          <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-2xl">
+            {post.image_urls.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                onClick={() => setLightbox({ open: true, index })}
+                className={`w-full bg-slate-100 rounded-xl cursor-pointer hover:opacity-95 transition
+                  ${post.image_urls.length === 1 ? "col-span-2 max-h-[500px] object-contain" : "h-64 object-cover"}`}
+                alt=""
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center gap-4 text-gray-600 text-sm pt-2 border-t border-gray-200">
+          <button
+            onClick={handleLike}
+            className="flex items-center gap-1 hover:text-red-500 transition"
+          >
+            <Heart
+              className={`size-4 ${likes.includes(currentUser?._id) ? "text-red-500 fill-red-500" : ""}`}
+            />
+            <span>{likes.length}</span>
+          </button>
+
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1 hover:text-indigo-600 transition"
+          >
+            <MessageCircle className="size-4" />
+            <span>{commentCount}</span>
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1 hover:text-green-600 transition"
+          >
+            <Share2 className="size-4" />
+          </button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

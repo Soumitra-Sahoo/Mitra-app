@@ -95,7 +95,7 @@ const UserCard = ({ user }) => {
         <button
           onClick={handleFollow}
           disabled={currentUser?.following.includes(user._id)}
-          className="w-full py-2.5 rounded-xl flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 active:scale-95 transition-all duration-300 text-white cursor-pointer shadow-md"
+          className="w-full py-2.5 rounded-xl flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 active:scale-95 transition-all duration-300 text-white cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           <UserPlus className="size-4" />{" "}
           {currentUser?.following.includes(user._id) ? "Following" : "Follow"}

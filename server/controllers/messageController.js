@@ -2,36 +2,62 @@ import fs from "fs";
 import imagekit from "../configs/imageKit.js";
 import Message from "../models/Message.js";
 
-// Create an empty object to store SS Event connections
+// Create an empty object to store SSE connections
 const connections = {};
+
+// Helper to push SSE event to a user
+const pushEvent = (userId, payload) => {
+  if (connections[userId]) {
+    connections[userId].write(`data: ${JSON.stringify(payload)}\n\n`);
+  }
+};
 
 // controller function for the SSE endpoint
 export const sseController = (req, res) => {
   const { userId } = req.params;
   console.log("New client connected : ", userId);
 
-  // Set SSE Header
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.setHeader("Access-Control-Allow-Origin", "https://mitra-app.vercel.app");
+  res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
-  // Add the client's response object to the connections object
   connections[userId] = res;
 
-  // Send an initial event to the client
+  // Broadcast online status to everyone connected
+  Object.keys(connections).forEach((connectedUserId) => {
+    if (connectedUserId !== userId) {
+      pushEvent(connectedUserId, { type: "user_online", userId });
+    }
+  });
+
+  res.write(`data: ${JSON.stringify({ type: "connected" })}\n\n`);
+
+  // Send current online users list to the newly connected user
+  const onlineUsers = Object.keys(connections).filter((id) => id !== userId);
   res.write(
-    `data: ${JSON.stringify({
-      type: "connected",
-    })}\n\n`,
+    `data: ${JSON.stringify({ type: "online_users", users: onlineUsers })}\n\n`,
   );
 
-  // Handle client disconnection
   req.on("close", () => {
-    // Remove the client's response object from the connections array
     delete connections[userId];
-    console.log("Client disconnected");
+    // Broadcast offline status
+    Object.keys(connections).forEach((connectedUserId) => {
+      pushEvent(connectedUserId, { type: "user_offline", userId });
+    });
+    console.log("Client disconnected:", userId);
   });
+};
+
+// Typing indicator — called via POST, pushes SSE to recipient
+export const typingIndicator = (req, res) => {
+  try {
+    const { from, to, isTyping } = req.body;
+    pushEvent(to, { type: "typing", from, isTyping });
+    res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
 };
 
 // Send Message
@@ -66,21 +92,15 @@ export const sendMessage = async (req, res) => {
       text,
       message_type,
       media_url,
-      delivered: !!connections[to_user_id]
+      delivered: !!connections[to_user_id],
     });
 
     res.json({ success: true, message });
 
-    // Send message to to_user_id using SSE
     const messageWithUserData = await Message.findById(message._id).populate(
       "from_user_id",
     );
-
-    if (connections[to_user_id]) {
-      connections[to_user_id].write(
-        `data: ${JSON.stringify(messageWithUserData)}\n\n`,
-      );
-    }
+    pushEvent(to_user_id, messageWithUserData);
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
@@ -100,21 +120,13 @@ export const getChatMessages = async (req, res) => {
       ],
     }).sort({ createdAt: -1 });
 
-    // Mark message as seen
     await Message.updateMany(
       { from_user_id: to_user_id, to_user_id: userId },
       { seen: true },
     );
-    // Notify sender that messages were seen
-        if (connections[to_user_id]) {
-            connections[to_user_id].write(
-                `data: ${JSON.stringify({
-                    type: "seen",
-                    by: userId
-                })}\n\n`
-            );
-        }
-        
+
+    pushEvent(to_user_id, { type: "seen", by: userId });
+
     res.json({ success: true, messages });
   } catch (error) {
     console.log(error);
@@ -134,3 +146,5 @@ export const getUserRecentMessages = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+
+export { connections, pushEvent };

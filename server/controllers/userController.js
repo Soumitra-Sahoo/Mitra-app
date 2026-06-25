@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import fs from "fs";
 import Post from "../models/Post.js";
 import { inngest } from "../inngest/index.js";
+import Notification from "../models/Notification.js";
 
 // Get user data using userId
 export const getUserData = async (req, res) => {
@@ -70,7 +71,7 @@ export const updateUserData = async (req, res) => {
       const buffer = fs.readFileSync(cover.path);
       const response = await imagekit.upload({
         file: buffer,
-        fileName: profile.originalname,
+        fileName: cover.originalname,
       });
 
       const url = imagekit.url({
@@ -157,6 +158,14 @@ export const followUser = async (req, res) => {
     const toUser = await User.findById(id);
     toUser.followers.push(userId);
     await toUser.save();
+
+    // Notify the followed user
+    await Notification.create({
+      recipient_id: id,
+      sender_id: userId,
+      type: "follow",
+      message: `${user.full_name} started following you`,
+    });
 
     res.json({ success: true, message: "Now you are following this user" });
   } catch (error) {
@@ -320,6 +329,69 @@ export const getUserProfiles = async (req, res) => {
     }
     const posts = await Post.find({ user: profileId }).populate("user");
     res.json({ success: true, profile, posts });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Suggests users who share mutual connections/followers with the current user
+export const getPeopleYouMayKnow = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const me = await User.findById(userId);
+    const exclude = new Set([
+      userId,
+      ...me.following.map(String),
+      ...me.connections.map(String),
+    ]);
+    const mutualPool = new Set();
+    for (const followedId of me.following) {
+      const followed = await User.findById(followedId).select(
+        "following connections",
+      );
+      if (!followed) continue;
+      [...followed.following, ...followed.connections].forEach((id) => {
+        const s = String(id);
+        if (!exclude.has(s)) mutualPool.add(s);
+      });
+    }
+
+    let suggestions = [];
+    if (mutualPool.size > 0) {
+      suggestions = await User.find({ _id: { $in: [...mutualPool] } }).limit(6);
+    }
+    if (suggestions.length < 6) {
+      const extraIds = [
+        ...exclude,
+        ...suggestions.map((u) => u._id.toString()),
+      ];
+      const extra = await User.find({ _id: { $nin: extraIds } })
+        .sort({ followers: -1 })
+        .limit(6 - suggestions.length);
+      suggestions = [...suggestions, ...extra];
+    }
+
+    res.json({ success: true, users: suggestions });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export const getOnboardingStatus = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const user = await User.findById(userId);
+    if (!user) return res.json({ success: false, message: "User not found" });
+
+    const needsOnboarding =
+      !user.bio ||
+      user.bio === "Hey there! I am using Mitra App" ||
+      !user.location ||
+      !user.profile_picture;
+
+    res.json({ success: true, needsOnboarding, user });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
