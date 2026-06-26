@@ -68,7 +68,7 @@ const UserCard = ({ user }) => {
       <div className="text-center">
         <img
           src={user.profile_picture}
-          className="aspect-square object-cover rounded-full w-20 mx-auto shadow-xl ring-4 ring-blue-100 "
+          className="aspect-square object-cover rounded-full w-20 mx-autoborder-4 border-white shadow-2xl"
           alt=""
         />
         <p className="mt-4 font-semibold">{user.full_name}</p>

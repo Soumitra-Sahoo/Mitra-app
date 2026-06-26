@@ -160,7 +160,7 @@ const Profile = () => {
         />
       )}
 
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Profile Card */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden">
           {/* Cover Photo */}
