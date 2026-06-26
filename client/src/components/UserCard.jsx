@@ -62,13 +62,11 @@ const UserCard = ({ user }) => {
   return (
     <div
       key={user._id}
-      className="w-full sm:w-[320px] p-5 flex flex-col justify-between bg-white/80 backdrop-blur-lg border border-white/50 rounded-3xl shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300
-"
-    >
+      className="w-full sm:w-[320px] p-5 flex flex-col justify-between bg-white/80 backdrop-blur-lg border border-white/50 rounded-3xl shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300" >
       <div className="text-center">
         <img
           src={user.profile_picture}
-          className="aspect-square object-cover rounded-full w-20 mx-autoborder-4 border-white shadow-2xl"
+          className="aspect-square object-cover rounded-full w-20 mx-auto border-4 border-white shadow-2xl"
           alt=""
         />
         <p className="mt-4 font-semibold">{user.full_name}</p>

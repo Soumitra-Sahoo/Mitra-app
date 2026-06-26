@@ -164,15 +164,18 @@ const Profile = () => {
         {/* Profile Card */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden">
           {/* Cover Photo */}
-          <div className="relative h-56 md:h-72 overflow-hidden bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 z-10" />
-            {user.cover_photo && (
+          <div className="relative h-64 md:h-80 overflow-hidden">
+            {user.cover_photo ? (
               <img
                 src={user.cover_photo}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
                 alt="cover"
               />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200" />
             )}
+
+            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
           </div>
           {/* User Info */}
           <UserProfileInfo

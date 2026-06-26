@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { Search, Flame, Users } from "lucide-react";
+import { Search, Flame, Users,UserPlus } from "lucide-react";
 import UserCard from "../components/UserCard";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "../features/user/userSlice.js";
 
-// ── Skeleton card ──────────────────────────────────────────────────────────────
 const UserCardSkeleton = () => (
   <div className="w-full sm:w-[320px] p-5 bg-white/80 border border-white/50 rounded-3xl shadow-lg animate-pulse">
     <div className="flex flex-col items-center gap-3">
@@ -94,7 +93,7 @@ const Discover = () => {
       <div className="p-6 pb-4 bg-gradient-to-b from-slate-50 to-white z-20">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-900 mb-1">
-            Discover People
+           <UserPlus className="size-7"/> Discover People
           </h1>
           <p className="text-slate-500">
             Connect with people and grow your network
