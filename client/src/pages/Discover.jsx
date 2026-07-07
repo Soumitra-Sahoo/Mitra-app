@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { Search, Flame, Users,UserPlus } from "lucide-react";
+import { Search, Flame, Users, UserPlus } from "lucide-react";
 import UserCard from "../components/UserCard";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
@@ -92,8 +92,9 @@ const Discover = () => {
       {/* Fixed header */}
       <div className="p-6 pb-4 bg-gradient-to-b from-slate-50 to-white z-20">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900 mb-1">
-           <UserPlus className="size-7"/> Discover People
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 mb-2">
+            <UserPlus className="size-7 shrink-0" />
+            <span>Discover People</span>
           </h1>
           <p className="text-slate-500">
             Connect with people and grow your network

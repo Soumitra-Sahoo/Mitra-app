@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {MessageSquare, User, UserCheck, UserPlus, UserRoundPen, Share2} from "lucide-react";
+import {
+  MessageSquare,
+  User,
+  UserCheck,
+  UserPlus,
+  UserRoundPen,
+  Share2,
+} from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import { fetchConnections } from "../features/connections/connectionSlice.js";
@@ -77,8 +84,9 @@ const Connections = () => {
       <div className="max-w-6xl mx-auto p-6">
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            <Share2 className="size-7"/>Connections
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 mb-2">
+            <Share2 className="size-7 shrink-0" />
+            <span>Connections</span>
           </h1>
           <p className="text-slate-600">
             Manage your network and discover new connections

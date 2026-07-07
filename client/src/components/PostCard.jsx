@@ -1,14 +1,4 @@
-import {
-  BadgeCheck,
-  Heart,
-  MessageCircle,
-  Share2,
-  X,
-  Send,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { BadgeCheck, Heart, MessageCircle, Share2, X, Send, Trash2, ChevronDown,  ChevronUp} from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";

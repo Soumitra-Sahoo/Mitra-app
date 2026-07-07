@@ -13,8 +13,10 @@ const Message = () => {
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            <MessageSquareText className="size-7"/>Messages</h1>
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 mb-2">
+            <MessageSquareText className="size-7 shrink-0" />
+            <span>Messages</span>
+          </h1>
           <p className="text-slate-500">Talk to your friends and family</p>
         </div>
 

@@ -11,14 +11,11 @@ import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
-// ── Lightbox component ────────────────────────────────────────────────────────
 const Lightbox = ({ images, startIndex, onClose }) => {
   const [current, setCurrent] = useState(startIndex);
-
   const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
   const next = () => setCurrent((c) => (c + 1) % images.length);
 
-  // keyboard navigation
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "ArrowLeft") prev();
@@ -86,18 +83,14 @@ const Lightbox = ({ images, startIndex, onClose }) => {
   );
 };
 
-// ── Profile page ──────────────────────────────────────────────────────────────
 const Profile = () => {
   const currentUser = useSelector((state) => state.user.value);
   const { getToken } = useAuth();
   const { profileId } = useParams();
-
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
-
-  // Lightbox state
   const [lightbox, setLightbox] = useState({
     open: false,
     images: [],
@@ -139,12 +132,9 @@ const Profile = () => {
     }
   }, [profileId, currentUser?._id]);
 
-  // ── safe guard: compute only when user is loaded ──────────────────────────
   const likedPosts = user
     ? posts.filter((post) => post.likes_count.includes(user._id))
     : [];
-
-  // all media images across all posts
   const allImages = posts.flatMap((post) => post.image_urls);
 
   if (!user) return <Loading />;
@@ -174,8 +164,6 @@ const Profile = () => {
             ) : (
               <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200" />
             )}
-
-            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
           </div>
           {/* User Info */}
           <UserProfileInfo
