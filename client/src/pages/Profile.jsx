@@ -31,7 +31,6 @@ const Lightbox = ({ images, startIndex, onClose }) => {
       className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center"
       onClick={onClose}
     >
-      {/* Close */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition z-10"
@@ -39,14 +38,12 @@ const Lightbox = ({ images, startIndex, onClose }) => {
         <X className="size-6" />
       </button>
 
-      {/* Counter */}
       {images.length > 1 && (
         <span className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
           {current + 1} / {images.length}
         </span>
       )}
 
-      {/* Prev */}
       {images.length > 1 && (
         <button
           onClick={(e) => {
@@ -59,7 +56,6 @@ const Lightbox = ({ images, startIndex, onClose }) => {
         </button>
       )}
 
-      {/* Image */}
       <img
         src={images[current]}
         alt=""
@@ -67,7 +63,6 @@ const Lightbox = ({ images, startIndex, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       />
 
-      {/* Next */}
       {images.length > 1 && (
         <button
           onClick={(e) => {
@@ -96,6 +91,9 @@ const Profile = () => {
     images: [],
     index: 0,
   });
+  const handlePostDelete = (postId) => {
+  setPosts((prev) => prev.filter((p) => p._id !== postId));
+};
 
   const openLightbox = (images, index) =>
     setLightbox({ open: true, images, index });
@@ -136,12 +134,10 @@ const Profile = () => {
     ? posts.filter((post) => post.likes_count.includes(user._id))
     : [];
   const allImages = posts.flatMap((post) => post.image_urls);
-
   if (!user) return <Loading />;
 
   return (
     <div className="relative h-full overflow-y-scroll bg-gray-50 p-6">
-      {/* Lightbox */}
       {lightbox.open && (
         <Lightbox
           images={lightbox.images}
@@ -151,9 +147,7 @@ const Profile = () => {
       )}
 
       <div className="max-w-4xl mx-auto">
-        {/* Profile Card */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden">
-          {/* Cover Photo */}
           <div className="relative h-64 md:h-80 overflow-hidden">
             {user.cover_photo ? (
               <img
@@ -165,7 +159,6 @@ const Profile = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200" />
             )}
           </div>
-          {/* User Info */}
           <UserProfileInfo
             user={user}
             posts={posts}
@@ -174,7 +167,6 @@ const Profile = () => {
           />
         </div>
 
-        {/* Tabs */}
         <div className="mt-6">
           <div className="bg-white rounded-lg shadow p-1 flex max-w-md mx-auto">
             {["posts", "media", "likes"].map((tab) => (
@@ -192,19 +184,17 @@ const Profile = () => {
             ))}
           </div>
 
-          {/* ── Posts tab ── */}
           {activeTab === "posts" && (
             <div className="mt-6 flex flex-col items-center gap-6">
               {posts.length === 0 && (
                 <p className="text-gray-500 mt-10">No posts yet</p>
               )}
               {posts.map((post) => (
-                <PostCard key={post._id} post={post} />
+                <PostCard key={post._id} post={post} onDelete={handlePostDelete}/>
               ))}
             </div>
           )}
 
-          {/* ── Media tab ── */}
           {activeTab === "media" && (
             <div className="mt-6">
               {allImages.length === 0 ? (
@@ -217,7 +207,6 @@ const Profile = () => {
                       post.image_urls.map((image, imgIdx) => ({
                         image,
                         post,
-                        // absolute index in allImages for lightbox
                         absIdx: allImages.indexOf(image),
                       })),
                     )
@@ -245,21 +234,19 @@ const Profile = () => {
             </div>
           )}
 
-          {/* ── Likes tab ── */}
           {activeTab === "likes" && (
             <div className="mt-6 flex flex-col items-center gap-6">
               {likedPosts.length === 0 && (
                 <p className="text-gray-500 mt-10">No liked posts yet</p>
               )}
               {likedPosts.map((post) => (
-                <PostCard key={post._id} post={post} />
+                <PostCard key={post._id} post={post} onDelete={handlePostDelete}/>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
       {showEdit && <ProfileModel setShowEdit={setShowEdit} />}
     </div>
   );

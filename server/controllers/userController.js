@@ -6,8 +6,7 @@ import Post from "../models/Post.js";
 import { inngest } from "../inngest/index.js";
 import Notification from "../models/Notification.js";
 
-// Get user data using userId
-export const getUserData = async (req, res) => {
+const getUserData = async (req, res) => {
   try {
     const { userId } = req.auth();
     const user = await User.findById(userId);
@@ -19,31 +18,21 @@ export const getUserData = async (req, res) => {
   }
 };
 
-// Update user data
-export const updateUserData = async (req, res) => {
+const updateUserData = async (req, res) => {
   try {
     const { userId } = req.auth();
     let { username, bio, location, full_name } = req.body;
-
     const tempUser = await User.findById(userId);
-
     !username && (username = tempUser.username);
-
     if (tempUser.username !== username) {
       const user = await User.findOne({ username });
 
       if (user) {
-        // we will not change the username if it is already taken
         username = tempUser.username;
       }
     }
 
-    const updatedData = {
-      username,
-      bio,
-      location,
-      full_name,
-    };
+    const updatedData = {username, bio, location, full_name};
 
     const profile = req.files.profile && req.files.profile[0];
     const cover = req.files.cover && req.files.cover[0];
@@ -97,15 +86,11 @@ export const updateUserData = async (req, res) => {
   }
 };
 
-// Find users using username, email, location, name
-export const discoverUsers = async (req, res) => {
+const discoverUsers = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { input } = req.body;
-
     let users;
-
-    // Trending users when search is empty
     if (!input) {
       users = await User.find({
         _id: { $ne: userId },
@@ -123,13 +108,8 @@ export const discoverUsers = async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      users,
-    });
+    res.json({success: true, users});
   } catch (error) {
-    console.log(error);
-
     res.json({
       success: false,
       message: error.message,
@@ -137,14 +117,11 @@ export const discoverUsers = async (req, res) => {
   }
 };
 
-// Follow User
-export const followUser = async (req, res) => {
+const followUser = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { id } = req.body;
-
     const user = await User.findById(userId);
-
     if (user.following.includes(id)) {
       return res.json({
         success: false,
@@ -152,14 +129,16 @@ export const followUser = async (req, res) => {
       });
     }
 
-    user.following.push(id);
-    await user.save();
+    await User.updateOne(
+      { _id: userId },
+      { $addToSet: { following: id } },
+    );
 
-    const toUser = await User.findById(id);
-    toUser.followers.push(userId);
-    await toUser.save();
+    await User.updateOne(
+      { _id: id },
+      { $addToSet: { followers: userId } },
+    );
 
-    // Notify the followed user
     await Notification.create({
       recipient_id: id,
       sender_id: userId,
@@ -167,44 +146,49 @@ export const followUser = async (req, res) => {
       message: `${user.full_name} started following you`,
     });
 
-    res.json({ success: true, message: "Now you are following this user" });
+    res.json({
+      success: true,
+      message: "Now you are following this user",
+    });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Unfollow User
-export const unfollowUser = async (req, res) => {
+const unfollowUser = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { id } = req.body;
 
-    const user = await User.findById(userId);
-    user.following = user.following.filter((user) => user !== id);
-    await user.save();
+    await User.updateOne(
+      { _id: userId },
+      { $pull: { following: id } },
+    );
 
-    const toUser = await User.findById(id);
-    toUser.followers = toUser.followers.filter((user) => user !== userId);
-    await toUser.save();
+    await User.updateOne(
+      { _id: id },
+      { $pull: { followers: userId } },
+    );
 
     res.json({
       success: true,
       message: "You are no longer following this user",
     });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Send Connection Request
-export const sendConnectionReqest = async (req, res) => {
+const sendConnectionReqest = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { id } = req.body;
-
-    // Check if user has sent more than 20 connection requests in the last 24 hours
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const connectionRequests = await Connection.find({
       from_user_id: userId,
@@ -218,7 +202,6 @@ export const sendConnectionReqest = async (req, res) => {
       });
     }
 
-    // Check if users are already connected
     const connection = await Connection.findOne({
       $or: [
         { from_user_id: userId, to_user_id: id },
@@ -255,8 +238,7 @@ export const sendConnectionReqest = async (req, res) => {
   }
 };
 
-// Get Connection Request
-export const getUserConnections = async (req, res) => {
+const getUserConnections = async (req, res) => {
   try {
     const { userId } = req.auth();
     const user = await User.findById(userId).populate(
@@ -286,8 +268,7 @@ export const getUserConnections = async (req, res) => {
   }
 };
 
-// Accept user Connections
-export const acceptConnectionRequest = async (req, res) => {
+const acceptConnectionRequest = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { id } = req.body;
@@ -298,29 +279,48 @@ export const acceptConnectionRequest = async (req, res) => {
     });
 
     if (!connection) {
-      return res.json({ success: false, message: "Connection not found" });
+      return res.json({
+        success: false,
+        message: "Connection not found",
+      });
     }
 
-    const user = await User.findById(userId);
-    user.connections.push(id);
-    await user.save();
+    await User.updateOne(
+      { _id: userId },
+      { $addToSet: { connections: id } },
+    );
 
-    const toUser = await User.findById(id);
-    toUser.connections.push(userId);
-    await toUser.save();
+    await User.updateOne(
+      { _id: id },
+      { $addToSet: { connections: userId } },
+    );
 
     connection.status = "accepted";
     await connection.save();
 
-    res.json({ success: true, message: "Connection accepted successfully" });
+    const accepter = await User.findById(userId);
+
+    await Notification.create({
+      recipient_id: id,
+      sender_id: userId,
+      type: "connection_accepted",
+      message: `${accepter.full_name} accepted your connection request`,
+    });
+
+    res.json({
+      success: true,
+      message: "Connection accepted successfully",
+    });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Get User Profiles
-export const getUserProfiles = async (req, res) => {
+const getUserProfiles = async (req, res) => {
   try {
     const { profileId } = req.body;
     const profile = await User.findById(profileId);
@@ -335,8 +335,7 @@ export const getUserProfiles = async (req, res) => {
   }
 };
 
-// Suggests users who share mutual connections/followers with the current user
-export const getPeopleYouMayKnow = async (req, res) => {
+const getPeopleYouMayKnow = async (req, res) => {
   try {
     const { userId } = req.auth();
     const me = await User.findById(userId);
@@ -379,7 +378,7 @@ export const getPeopleYouMayKnow = async (req, res) => {
   }
 };
 
-export const getOnboardingStatus = async (req, res) => {
+const getOnboardingStatus = async (req, res) => {
   try {
     const { userId } = req.auth();
     const user = await User.findById(userId);
@@ -396,4 +395,18 @@ export const getOnboardingStatus = async (req, res) => {
     console.log(error);
     res.json({ success: false, message: error.message });
   }
+};
+
+export {
+  getUserData,
+  updateUserData,
+  discoverUsers,
+  followUser,
+  unfollowUser,
+  sendConnectionReqest,
+  getUserConnections,
+  acceptConnectionRequest,
+  getUserProfiles,
+  getPeopleYouMayKnow,
+  getOnboardingStatus,
 };

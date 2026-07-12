@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-} from "react";
+import React, {useRef, useEffect, useState, createContext, useContext} from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Feed from "./pages/Feed";
@@ -22,12 +16,10 @@ import toast, { Toaster } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/user/userSlice.js";
 import { fetchConnections } from "./features/connections/connectionSlice.js";
-import {
-  addMessage,
-  markMessagesSeen,
-} from "./features/messages/messagesSlice.js";
+import {addMessage, markMessagesSeen } from "./features/messages/messagesSlice.js";
 import Notification from "./components/Notification.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
+import Loading from "./components/Loading.jsx";
 
 export const OnlineContext = createContext({
   onlineUsers: new Set(),
@@ -36,7 +28,7 @@ export const OnlineContext = createContext({
 export const useOnline = () => useContext(OnlineContext);
 
 const App = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const dispatch = useDispatch();
   const { pathname } = useLocation();
@@ -116,7 +108,10 @@ const App = () => {
       <Toaster />
       {user && <OnboardingModal />}
       <Routes>
-        <Route path="/" element={!user ? <Login /> : <Layout />}>
+        <Route
+          path="/"
+          element={!isLoaded ? <Loading /> : !user ? <Login /> : <Layout />}
+        >
           <Route index element={<Feed />} />
           <Route path="messages" element={<Message />} />
           <Route path="messages/:userId" element={<ChatBox />} />

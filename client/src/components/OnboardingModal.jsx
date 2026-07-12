@@ -32,7 +32,6 @@ const OnboardingModal = () => {
   const [saving, setSaving] = useState(false);
   const [checked, setChecked] = useState(false);
 
-  // Check onboarding status once user is loaded
   useEffect(() => {
     if (!currentUser || checked) return;
     const check = async () => {
@@ -58,25 +57,25 @@ const OnboardingModal = () => {
   }, [currentUser]);
 
   const handleSave = async () => {
-    setSaving(true);
-    try {
-      const formData = new FormData();
-      formData.append("bio", form.bio);
-      formData.append("location", form.location);
-      formData.append("username", currentUser.username);
-      formData.append("full_name", currentUser.full_name);
-      if (form.profile_picture)
-        formData.append("profile", form.profile_picture);
+  setSaving(true);
+  try {
+    const formData = new FormData();
+    formData.append("bio", form.bio);
+    formData.append("location", form.location);
+    formData.append("username", currentUser.username);
+    formData.append("full_name", currentUser.full_name);
+    if (form.profile_picture)
+      formData.append("profile", form.profile_picture);
 
-      const token = await getToken();
-      dispatch(updateUser({ userData: formData, token }));
-      setStep(STEPS.indexOf("done"));
-    } catch (e) {
-      toast.error(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
+    const token = await getToken();
+    await dispatch(updateUser({ userData: formData, token })).unwrap();
+    setStep(STEPS.indexOf("done"));
+  } catch (e) {
+    toast.error(typeof e === "string" ? e : e?.message || "Failed to save profile");
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (!show) return null;
 
