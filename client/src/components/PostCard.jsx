@@ -1,4 +1,14 @@
-import { BadgeCheck, Heart, MessageCircle, Share2, X, Send, Trash2, ChevronDown,  ChevronUp} from "lucide-react";
+import {
+  BadgeCheck,
+  Heart,
+  MessageCircle,
+  Share2,
+  X,
+  Send,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -451,8 +461,7 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
   );
 };
 
-// ── Main PostCard ──────────────────────────────────────────────────────────────
-const PostCard = ({ post }) => {
+const PostCard = ({ post, onDelete }) => {
   const postWithHashtags = post.content?.replace(
     /(#\w+)/g,
     '<span class="text-indigo-600 cursor-pointer hover:underline" data-tag="$1">$1</span>',
@@ -466,7 +475,6 @@ const PostCard = ({ post }) => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  // Fetch real comment count on mount
   useEffect(() => {
     const load = async () => {
       try {
@@ -502,7 +510,6 @@ const PostCard = ({ post }) => {
     }
   };
 
-  // Handle hashtag click from dangerouslySetInnerHTML
   const handleContentClick = (e) => {
     const tag = e.target.getAttribute("data-tag");
     if (tag) navigate(`/hashtag/${tag.replace("#", "")}`);
@@ -515,6 +522,26 @@ const PostCard = ({ post }) => {
     } else {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard!");
+    }
+  };
+
+  const isOwner = post.user._id === currentUser?._id;
+
+  const handleDeletePost = async () => {
+    if (!window.confirm("Delete this post? This can't be undone.")) return;
+    try {
+      const token = await getToken();
+      const { data } = await api.delete(`/api/post/${post._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data.success) {
+        toast.success("Post deleted");
+        onDelete?.(post._id);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
@@ -611,6 +638,16 @@ const PostCard = ({ post }) => {
           >
             <Share2 className="size-4" />
           </button>
+
+          {isOwner && (
+            <button
+              onClick={handleDeletePost}
+              className="ml-auto flex items-center gap-1 hover:text-red-500 transition"
+              title="Delete post"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          )}
         </div>
       </div>
     </>

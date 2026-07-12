@@ -2,20 +2,23 @@ import fs from "fs";
 import imagekit from "../configs/imageKit.js";
 import Message from "../models/Message.js";
 
-// Create an empty object to store SSE connections
 const connections = {};
 
-// Helper to push SSE event to a user
 const pushEvent = (userId, payload) => {
   if (connections[userId]) {
     connections[userId].write(`data: ${JSON.stringify(payload)}\n\n`);
   }
 };
 
-// controller function for the SSE endpoint
-export const sseController = (req, res) => {
+const sseController = (req, res) => {
   const { userId } = req.params;
-  console.log("New client connected : ", userId);
+  const { userId: authUserId } = req.auth();
+
+  if (authUserId !== userId) {
+    return res.status(403).json({ success: false, message: "Forbidden" });
+  }
+
+  console.log("New client connected:", userId);
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -24,7 +27,6 @@ export const sseController = (req, res) => {
 
   connections[userId] = res;
 
-  // Broadcast online status to everyone connected
   Object.keys(connections).forEach((connectedUserId) => {
     if (connectedUserId !== userId) {
       pushEvent(connectedUserId, { type: "user_online", userId });
@@ -32,8 +34,6 @@ export const sseController = (req, res) => {
   });
 
   res.write(`data: ${JSON.stringify({ type: "connected" })}\n\n`);
-
-  // Send current online users list to the newly connected user
   const onlineUsers = Object.keys(connections).filter((id) => id !== userId);
   res.write(
     `data: ${JSON.stringify({ type: "online_users", users: onlineUsers })}\n\n`,
@@ -41,7 +41,6 @@ export const sseController = (req, res) => {
 
   req.on("close", () => {
     delete connections[userId];
-    // Broadcast offline status
     Object.keys(connections).forEach((connectedUserId) => {
       pushEvent(connectedUserId, { type: "user_offline", userId });
     });
@@ -49,10 +48,10 @@ export const sseController = (req, res) => {
   });
 };
 
-// Typing indicator — called via POST, pushes SSE to recipient
-export const typingIndicator = (req, res) => {
+const typingIndicator = (req, res) => {
   try {
-    const { from, to, isTyping } = req.body;
+    const { userId: from } = req.auth();
+    const { to, isTyping } = req.body;
     pushEvent(to, { type: "typing", from, isTyping });
     res.json({ success: true });
   } catch (error) {
@@ -60,22 +59,22 @@ export const typingIndicator = (req, res) => {
   }
 };
 
-// Send Message
-export const sendMessage = async (req, res) => {
+const sendMessage = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to_user_id, text } = req.body;
     const image = req.file;
-
     let media_url = "";
     let message_type = image ? "image" : "text";
 
     if (message_type === "image") {
       const fileBuffer = fs.readFileSync(image.path);
+
       const response = await imagekit.upload({
         file: fileBuffer,
         fileName: image.originalname,
       });
+
       media_url = imagekit.url({
         path: response.filePath,
         transformation: [
@@ -107,12 +106,10 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-// Get Chat Messages
-export const getChatMessages = async (req, res) => {
+const getChatMessages = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to_user_id } = req.body;
-
     const messages = await Message.find({
       $or: [
         { from_user_id: userId, to_user_id },
@@ -126,7 +123,6 @@ export const getChatMessages = async (req, res) => {
     );
 
     pushEvent(to_user_id, { type: "seen", by: userId });
-
     res.json({ success: true, messages });
   } catch (error) {
     console.log(error);
@@ -134,7 +130,7 @@ export const getChatMessages = async (req, res) => {
   }
 };
 
-export const getUserRecentMessages = async (req, res) => {
+const getUserRecentMessages = async (req, res) => {
   try {
     const { userId } = req.auth();
     const messages = await Message.find({ to_user_id: userId })
@@ -147,4 +143,4 @@ export const getUserRecentMessages = async (req, res) => {
   }
 };
 
-export { connections, pushEvent };
+export {connections, pushEvent, sseController, typingIndicator, sendMessage, getChatMessages, getUserRecentMessages};

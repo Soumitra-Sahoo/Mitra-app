@@ -16,41 +16,42 @@ const CreatePost = () => {
   const { getToken } = useAuth();
 
   const handleSubmit = async () => {
-    if (!images.length && !content) {
-      return toast.error("Please add at least one image or text");
+  if (!images.length && !content) {
+    return toast.error("Please add at least one image or text");
+  }
+  setLoading(true);
+
+  const postType =
+    images.length && content
+      ? "text_with_image"
+      : images.length
+        ? "image"
+        : "text";
+
+  try {
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("post_type", postType);
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+
+    const token = await getToken();
+    const { data } = await api.post("/api/post/add", formData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (data.success) {
+      navigate("/");
+    } else {
+      throw new Error(data.message);
     }
-    setLoading(true);
-
-    const postType =
-      images.length && content
-        ? "text_with_image"
-        : images.length
-          ? "image"
-          : "text";
-
-    try {
-      const formData = new FormData();
-      formData.append("content", content);
-      formData.append("post_type", postType);
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
-
-      const token = await getToken();
-      const { data } = await api.post("/api/post/add", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (data.success) {
-        navigate("/");
-      } else {
-        console.log(data.message);
-        throw new Error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+  } catch (error) {
+    toast.error(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">

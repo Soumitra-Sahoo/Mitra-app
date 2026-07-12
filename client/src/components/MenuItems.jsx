@@ -24,7 +24,6 @@ const MenuItems = ({ setSidebarOpen, unreadCount = 0, setUnreadCount }) => {
         >
           <Icon className='w-5 h-5 transition-transform duration-300 group-hover:scale-110' />
           {label}
-          {/* Notification badge */}
           {label === 'Notifications' && unreadCount > 0 && (
             <span className='ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center'>
               {unreadCount > 99 ? '99+' : unreadCount}

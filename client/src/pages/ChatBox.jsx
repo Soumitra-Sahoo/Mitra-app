@@ -25,7 +25,7 @@ const ChatBox = () => {
   const [image, setImage] = useState(null);
   const [user, setUser] = useState(null);
   const [showEmoji, setShowEmoji] = useState(false);
-  const [isTyping, setIsTyping] = useState(false); // am I typing?
+  const [isTyping, setIsTyping] = useState(false); 
 
   const messagesEndRef = useRef(null);
   const typingTimeout = useRef(null);
@@ -44,14 +44,15 @@ const ChatBox = () => {
   };
 
   const sendTypingEvent = async (typing) => {
-    try {
-      await api.post("/api/message/typing", {
-        from: currentUser?._id,
-        to: userId,
-        isTyping: typing,
-      });
-    } catch (_) {}
-  };
+  try {
+    const token = await getToken();
+    await api.post(
+      "/api/message/typing",
+      { to: userId, isTyping: typing },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+  } catch (_) {}
+};
 
   const handleTextChange = (e) => {
     setText(e.target.value);
