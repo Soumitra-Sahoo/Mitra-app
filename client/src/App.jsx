@@ -1,4 +1,10 @@
-import React, {useRef, useEffect, useState, createContext, useContext} from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+} from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Feed from "./pages/Feed";
@@ -61,12 +67,11 @@ const App = () => {
 
   useEffect(() => {
     if (!user) return;
+    let eventSource;
+    let cancelled = false;
+    let reconnectTimeout;
 
-    const eventSource = new EventSource(
-      import.meta.env.VITE_BASE_URL + "/api/message/" + user.id,
-    );
-
-    eventSource.onmessage = (event) => {
+    const handleMessage = (event) => {
       const data = JSON.parse(event.data);
 
       if (data.type === "connected") return;
@@ -87,14 +92,20 @@ const App = () => {
         });
         return;
       }
+
       if (data.type === "typing") {
         setTypingUsers((prev) => ({ ...prev, [data.from]: data.isTyping }));
         return;
       }
+
       if (data.type === "seen") {
         dispatch(markMessagesSeen(data.by));
         return;
       }
+
+      // WebRTC call signaling — same SSE stream, just a different event
+      // namespace. handleSignal's identity is stable (see CallContext) so
+      // it's safe to include here without forcing this effect to re-run.
       if (typeof data.type === "string" && data.type.startsWith("call-")) {
         handleSignal(data);
         return;
@@ -110,8 +121,33 @@ const App = () => {
       }
     };
 
-    return () => eventSource.close();
-  }, [user, dispatch, handleSignal]);
+    const connect = async () => {
+      if (cancelled) return;
+      const token = await getToken();
+      if (cancelled) return;
+
+      eventSource = new EventSource(
+        `${import.meta.env.VITE_BASE_URL}/api/message/${user.id}?token=${encodeURIComponent(token)}`,
+      );
+
+      eventSource.onmessage = handleMessage;
+
+      eventSource.onerror = () => {
+        eventSource.close();
+        if (!cancelled) {
+          reconnectTimeout = setTimeout(connect, 2000);
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(reconnectTimeout);
+      eventSource?.close();
+    };
+  }, [user, dispatch, handleSignal, getToken]);
 
   return (
     <OnlineContext.Provider value={{ onlineUsers, typingUsers }}>

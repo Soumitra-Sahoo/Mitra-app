@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@clerk/backend": "^3.11.4",
     "@clerk/express": "^1.7.26",
     "cors": "^2.8.5",
     "dompurify": "^3.4.11",
