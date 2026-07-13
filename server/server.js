@@ -11,6 +11,7 @@ import storyRouter from "./routes/storyRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import commentRouter from "./routes/commentRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
+import callRouter from "./routes/callRoutes.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/story", storyRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/notification", notificationRouter);
+app.use("/api/call", callRouter);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

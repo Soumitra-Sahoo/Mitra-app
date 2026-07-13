@@ -16,10 +16,16 @@ import toast, { Toaster } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/user/userSlice.js";
 import { fetchConnections } from "./features/connections/connectionSlice.js";
-import {addMessage, markMessagesSeen } from "./features/messages/messagesSlice.js";
+import {
+  addMessage,
+  markMessagesSeen,
+} from "./features/messages/messagesSlice.js";
 import Notification from "./components/Notification.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
 import Loading from "./components/Loading.jsx";
+import IncomingCallModal from "./components/IncomingCallModal.jsx";
+import ActiveCall from "./components/ActiveCall.jsx";
+import { useCall } from "./context/CallContext.jsx";
 
 export const OnlineContext = createContext({
   onlineUsers: new Set(),
@@ -33,6 +39,7 @@ const App = () => {
   const dispatch = useDispatch();
   const { pathname } = useLocation();
   const pathnameRef = useRef(pathname);
+  const { handleSignal } = useCall();
 
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [typingUsers, setTypingUsers] = useState({}); 
@@ -80,16 +87,19 @@ const App = () => {
         });
         return;
       }
-
       if (data.type === "typing") {
         setTypingUsers((prev) => ({ ...prev, [data.from]: data.isTyping }));
         return;
       }
-
       if (data.type === "seen") {
         dispatch(markMessagesSeen(data.by));
         return;
       }
+      if (typeof data.type === "string" && data.type.startsWith("call-")) {
+        handleSignal(data);
+        return;
+      }
+
       if (!data?.from_user_id?._id) return;
       if (pathnameRef.current === "/messages/" + data.from_user_id._id) {
         dispatch(addMessage(data));
@@ -101,12 +111,14 @@ const App = () => {
     };
 
     return () => eventSource.close();
-  }, [user, dispatch]);
+  }, [user, dispatch, handleSignal]);
 
   return (
     <OnlineContext.Provider value={{ onlineUsers, typingUsers }}>
       <Toaster />
       {user && <OnboardingModal />}
+      <IncomingCallModal />
+      <ActiveCall />
       <Routes>
         <Route
           path="/"
