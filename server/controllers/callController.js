@@ -1,13 +1,24 @@
 import User from "../models/User.js";
 import Message from "../models/Message.js";
-import { pushEvent } from "./messageController.js";
+import { pushEvent, connections } from "./messageController.js";
 
 const isConnected = async (myId, otherId) => {
   const me = await User.findById(myId);
   return !!me?.connections?.includes(otherId);
 };
 
-const initiateCall = async (req, res) => {
+const pushEventWithRetry = async (userId, payload, attempts = 5, delayMs = 400) => {
+  for (let i = 0; i < attempts; i++) {
+    if (connections[userId]) {
+      pushEvent(userId, payload);
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  return false;
+};
+
+export const initiateCall = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to, callType, sdp, callId } = req.body;
@@ -20,7 +31,7 @@ const initiateCall = async (req, res) => {
     }
 
     const caller = await User.findById(userId);
-    pushEvent(to, {
+    const delivered = await pushEventWithRetry(to, {
       type: "call-incoming",
       callId,
       from: userId,
@@ -33,6 +44,13 @@ const initiateCall = async (req, res) => {
       sdp,
     });
 
+    if (!delivered) {
+      return res.json({
+        success: false,
+        message: "Couldn't reach this user right now — they may be offline",
+      });
+    }
+
     res.json({ success: true });
   } catch (error) {
     console.log(error);
@@ -40,7 +58,7 @@ const initiateCall = async (req, res) => {
   }
 };
 
-const answerCall = async (req, res) => {
+export const answerCall = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to, callId, sdp } = req.body;
@@ -57,7 +75,7 @@ const answerCall = async (req, res) => {
   }
 };
 
-const sendIceCandidate = async (req, res) => {
+export const sendIceCandidate = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to, callId, candidate } = req.body;
@@ -74,7 +92,7 @@ const sendIceCandidate = async (req, res) => {
   }
 };
 
-const rejectCall = async (req, res) => {
+export const rejectCall = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to, callId, callType, reason } = req.body;
@@ -88,6 +106,7 @@ const rejectCall = async (req, res) => {
     const populated = await Message.findById(message._id).populate(
       "from_user_id",
     );
+
     pushEvent(to, {
       type: "call-rejected",
       callId,
@@ -102,7 +121,7 @@ const rejectCall = async (req, res) => {
   }
 };
 
-const endCall = async (req, res) => {
+export const endCall = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to, callId, callType, status, duration } = req.body;
@@ -120,11 +139,10 @@ const endCall = async (req, res) => {
     );
 
     pushEvent(to, { type: "call-ended", callId, message: populated });
+
     res.json({ success: true, message: populated });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
   }
 };
-
-export {initiateCall, answerCall, sendIceCandidate, rejectCall, endCall}
