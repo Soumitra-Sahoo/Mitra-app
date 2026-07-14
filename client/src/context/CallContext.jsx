@@ -98,7 +98,15 @@ export const CallProvider = ({ children }) => {
         } catch (_) {}
       };
 
-      pc.ontrack = (e) => setRemoteStream(e.streams[0]);
+      pc.ontrack = (e) => {
+  console.log(
+    "[ontrack]",
+    e.track.kind,
+    "trackCount:",
+    e.streams[0]?.getTracks().length,
+  );
+  setRemoteStream(e.streams[0]);
+};
 
       return pc;
     },

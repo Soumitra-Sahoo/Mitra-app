@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCall } from "../context/CallContext.jsx";
-import { PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { Phone, Mic, MicOff, Video, VideoOff } from "lucide-react";
 
 const formatDuration = (seconds) => {
   const m = Math.floor(seconds / 60)
@@ -30,14 +30,34 @@ const ActiveCall = () => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [elapsed, setElapsed] = useState(0);
+  const [blockedByAutoplay, setBlockedByAutoplay] = useState(false);
 
   useEffect(() => {
     if (localVideoRef.current) localVideoRef.current.srcObject = localStream || null;
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream || null;
+    const el = remoteVideoRef.current;
+    if (!el) return;
+    el.srcObject = remoteStream || null;
+    if (remoteStream) {
+      // Remote video isn't muted (we need the audio), and browsers can
+      // silently block unmuted autoplay — the `autoplay` attribute alone
+      // isn't always enough. Calling play() explicitly surfaces the
+      // rejection so we can show a fallback instead of a silent black frame.
+      el.play().catch((err) => {
+        console.log("[remote video] play() blocked:", err.name, err.message);
+        setBlockedByAutoplay(true);
+      });
+    }
   }, [remoteStream]);
+
+  const retryPlay = () => {
+    remoteVideoRef.current
+      ?.play()
+      .then(() => setBlockedByAutoplay(false))
+      .catch((err) => console.log("[remote video] retry play() failed:", err.name));
+  };
 
   useEffect(() => {
     if (!callStartedAt) {
@@ -55,11 +75,16 @@ const ActiveCall = () => {
   if (!remoteUser) return null;
 
   const isVideo = callType === "video";
-  const showAvatarOverlay = !isVideo || callState === "calling" || !remoteStream;
+  const hasRemoteVideoTrack = (remoteStream?.getVideoTracks().length || 0) > 0;
+  const showAvatarOverlay =
+    !isVideo || callState === "calling" || !remoteStream || !hasRemoteVideoTrack;
 
   return (
     <div className="fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-between text-white">
       <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+        {/* Remote video — always rendered so audio plays even on audio-only
+            calls or before the avatar overlay is hidden; visually hidden
+            when not showing real video. */}
         <video
           ref={remoteVideoRef}
           autoPlay
@@ -91,6 +116,21 @@ const ActiveCall = () => {
           </p>
         )}
 
+        {/* Fallback for when the browser silently blocks unmuted autoplay —
+            a real click always satisfies the browser's playback policy. */}
+        {blockedByAutoplay && !showAvatarOverlay && (
+          <button
+            onClick={retryPlay}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 text-white"
+          >
+            <div className="size-14 rounded-full bg-white/20 flex items-center justify-center">
+              <Video className="size-6" />
+            </div>
+            <p className="text-sm font-medium">Tap to start video/audio</p>
+          </button>
+        )}
+
+        {/* Local video picture-in-picture */}
         {isVideo && (
           <video
             ref={localVideoRef}
@@ -119,7 +159,7 @@ const ActiveCall = () => {
           className="size-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition active:scale-95"
           title="End call"
         >
-          <PhoneOff className="size-7" />
+          <Phone className="size-7" />
         </button>
 
         {isVideo && (
