@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCall } from "../context/CallContext.jsx";
-import { Phone, Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { Phone, Mic, MicOff, Video, VideoOff, Volume2, Speaker } from "lucide-react";
+import toast from "react-hot-toast";
 
 const formatDuration = (seconds) => {
   const m = Math.floor(seconds / 60)
@@ -31,9 +32,19 @@ const ActiveCall = () => {
   const remoteVideoRef = useRef(null);
   const [elapsed, setElapsed] = useState(0);
   const [blockedByAutoplay, setBlockedByAutoplay] = useState(false);
+  const [usingAltOutput, setUsingAltOutput] = useState(false);
 
   useEffect(() => {
-    if (localVideoRef.current) localVideoRef.current.srcObject = localStream || null;
+    const el = localVideoRef.current;
+    if (!el) return;
+    if (el.srcObject !== localStream) {
+      el.srcObject = localStream || null;
+    }
+    if (localStream) {
+      el.play().catch((err) => {
+        console.log("[local video] play() issue:", err.name, err.message);
+      });
+    }
   }, [localStream]);
 
   useEffect(() => {
@@ -61,6 +72,33 @@ const ActiveCall = () => {
       ?.play()
       .then(() => setBlockedByAutoplay(false))
       .catch((err) => console.log("[remote video] retry play() failed:", err.name));
+  };
+
+  const toggleSpeaker = async () => {
+    const el = remoteVideoRef.current;
+    if (!el || typeof el.setSinkId !== "function") {
+      toast(
+        "Your phone's browser doesn't allow switching speaker/earpiece from a website — that's controlled by your phone's OS, not the app.",
+        { icon: "🔈", duration: 4000 },
+      );
+      return;
+    }
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const outputs = devices.filter((d) => d.kind === "audiooutput");
+      if (outputs.length < 2) {
+        toast("No alternate audio output device found on this computer", { icon: "🔈" });
+        return;
+      }
+      const next = usingAltOutput
+        ? outputs.find((d) => d.deviceId === "default") || outputs[0]
+        : outputs.find((d) => d.deviceId !== "default") || outputs[1];
+      await el.setSinkId(next.deviceId);
+      setUsingAltOutput((v) => !v);
+      toast.success(`Audio output: ${next.label || "switched"}`);
+    } catch (err) {
+      toast.error("Couldn't switch audio output");
+    }
   };
 
   useEffect(() => {
@@ -151,6 +189,16 @@ const ActiveCall = () => {
           title={muted ? "Unmute" : "Mute"}
         >
           {muted ? <MicOff className="size-6" /> : <Mic className="size-6" />}
+        </button>
+
+        <button
+          onClick={toggleSpeaker}
+          className={`size-14 rounded-full flex items-center justify-center transition ${
+            usingAltOutput ? "bg-white text-slate-900" : "bg-white/10 hover:bg-white/20"
+          }`}
+          title="Audio output"
+        >
+          {usingAltOutput ? <Speaker className="size-6" /> : <Volume2 className="size-6" />}
         </button>
 
         <button

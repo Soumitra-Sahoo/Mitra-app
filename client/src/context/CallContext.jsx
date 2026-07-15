@@ -19,6 +19,21 @@ const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
+    {
+      urls: "turn:openrelay.metered.ca:80",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443?transport=tcp",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
   ],
 };
 
@@ -42,6 +57,7 @@ export const CallProvider = ({ children }) => {
   const pcRef = useRef(null);
   const callIdRef = useRef(null);
   const localStreamRef = useRef(null);
+  const remoteMediaStreamRef = useRef(null); 
   const pendingCandidatesRef = useRef([]);
   const ringTimeoutRef = useRef(null);
   const incomingRef = useRef(null); 
@@ -69,6 +85,7 @@ export const CallProvider = ({ children }) => {
     }
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
+    remoteMediaStreamRef.current = null;
     setLocalStream(null);
     setRemoteStream(null);
     setRemoteUser(null);
@@ -84,6 +101,8 @@ export const CallProvider = ({ children }) => {
 
   const createPeerConnection = useCallback(
     (toUserId) => {
+      remoteMediaStreamRef.current = new MediaStream();
+
       const pc = new RTCPeerConnection(ICE_SERVERS);
 
       pc.onicecandidate = async (e) => {
@@ -99,14 +118,20 @@ export const CallProvider = ({ children }) => {
       };
 
       pc.ontrack = (e) => {
-  console.log(
-    "[ontrack]",
-    e.track.kind,
-    "trackCount:",
-    e.streams[0]?.getTracks().length,
-  );
-  setRemoteStream(e.streams[0]);
-};
+        console.log(
+          "[ontrack]",
+          e.track.kind,
+          "readyState:",
+          e.track.readyState,
+          "enabled:",
+          e.track.enabled,
+        );
+        const acc = remoteMediaStreamRef.current;
+        if (acc && !acc.getTracks().some((t) => t.id === e.track.id)) {
+          acc.addTrack(e.track);
+        }
+        setRemoteStream(acc);
+      };
 
       return pc;
     },
@@ -124,6 +149,10 @@ export const CallProvider = ({ children }) => {
           audio: true,
           video: type === "video",
         });
+        console.log(
+          "[local stream/startCall]",
+          stream.getTracks().map((t) => `${t.kind} readyState=${t.readyState} enabled=${t.enabled}`),
+        );
         localStreamRef.current = stream;
         setLocalStream(stream);
         setCallType(type);
@@ -203,6 +232,7 @@ export const CallProvider = ({ children }) => {
     finishCall(status, duration, remoteUser._id, callIdRef.current, callType);
   }, [remoteUser, callStartedAt, callState, callType, finishCall, cleanup]);
 
+  // ── Incoming call ──────────────────────────────────────────────
   const declineCall = useCallback(
     async (reason = "declined") => {
       const incoming = incomingRef.current;
@@ -241,6 +271,10 @@ export const CallProvider = ({ children }) => {
         audio: true,
         video: type === "video",
       });
+      console.log(
+        "[local stream/acceptCall]",
+        stream.getTracks().map((t) => `${t.kind} readyState=${t.readyState} enabled=${t.enabled}`),
+      );
       localStreamRef.current = stream;
       setLocalStream(stream);
 
@@ -276,6 +310,7 @@ export const CallProvider = ({ children }) => {
 
   const handleSignal = useCallback(
     async (data) => {
+      console.log("[call signal received]", data.type, data);
       switch (data.type) {
         case "call-incoming": {
           if (callState !== "idle") {
@@ -332,6 +367,10 @@ export const CallProvider = ({ children }) => {
         }
         case "call-rejected": {
           if (data.callId !== callIdRef.current) return;
+          // Unlike call-ended, this push always goes to the caller, and the
+          // message's from_user_id is the caller themselves (the callee
+          // rejected it) — so the "other party" to check against is
+          // to_user_id, not from_user_id.
           if (data.message) {
             appendIfChatOpen(data.message, data.message.to_user_id);
           }
