@@ -168,7 +168,7 @@ export const CallProvider = ({ children }) => {
 
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-
+        console.log(pc.localDescription.sdp);
         const headers = await authHeader();
         const { data } = await api.post(
           "/api/call/initiate",
