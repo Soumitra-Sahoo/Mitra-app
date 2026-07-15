@@ -39,16 +39,20 @@ const ActiveCall = () => {
   useEffect(() => {
     const el = remoteVideoRef.current;
     if (!el) return;
-    el.srcObject = remoteStream || null;
+    if (el.srcObject !== remoteStream) {
+      el.srcObject = remoteStream || null;
+    }
     if (remoteStream) {
-      // Remote video isn't muted (we need the audio), and browsers can
-      // silently block unmuted autoplay — the `autoplay` attribute alone
-      // isn't always enough. Calling play() explicitly surfaces the
-      // rejection so we can show a fallback instead of a silent black frame.
-      el.play().catch((err) => {
-        console.log("[remote video] play() blocked:", err.name, err.message);
-        setBlockedByAutoplay(true);
-      });
+      el.play()
+        .then(() => setBlockedByAutoplay(false))
+        .catch((err) => {
+          if (err.name === "NotAllowedError") {
+            console.log("[remote video] play() blocked:", err.name, err.message);
+            setBlockedByAutoplay(true);
+          } else {
+            console.log("[remote video] play() interrupted (non-fatal):", err.name);
+          }
+        });
     }
   }, [remoteStream]);
 
@@ -82,9 +86,6 @@ const ActiveCall = () => {
   return (
     <div className="fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-between text-white">
       <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
-        {/* Remote video — always rendered so audio plays even on audio-only
-            calls or before the avatar overlay is hidden; visually hidden
-            when not showing real video. */}
         <video
           ref={remoteVideoRef}
           autoPlay
@@ -116,8 +117,6 @@ const ActiveCall = () => {
           </p>
         )}
 
-        {/* Fallback for when the browser silently blocks unmuted autoplay —
-            a real click always satisfies the browser's playback policy. */}
         {blockedByAutoplay && !showAvatarOverlay && (
           <button
             onClick={retryPlay}

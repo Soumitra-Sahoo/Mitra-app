@@ -1,6 +1,6 @@
 import React from "react";
 import { useCall } from "../context/CallContext.jsx";
-import { Phone, PhoneOff, Video } from "lucide-react";
+import { Phone, Video } from "lucide-react";
 
 const IncomingCallModal = () => {
   const { callState, remoteUser, callType, acceptCall, declineCall } = useCall();
@@ -33,7 +33,7 @@ const IncomingCallModal = () => {
             className="size-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition active:scale-95"
             title="Decline"
           >
-            <PhoneOff className="size-6" />
+            <Phone className="size-6" />
           </button>
           <button
             onClick={acceptCall}
