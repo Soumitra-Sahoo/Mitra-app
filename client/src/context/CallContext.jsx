@@ -15,6 +15,20 @@ import { addMessage } from "../features/messages/messagesSlice.js";
 
 const CallContext = createContext(null);
 export const useCall = () => useContext(CallContext);
+
+// Public STUN servers — enough to establish a connection on most home/mobile
+// networks. Behind a symmetric NAT or strict corporate firewall this alone
+// isn't enough; a real production deployment would add a TURN server here
+// (e.g. coturn, Twilio, or Metered) as a relay fallback.
+// STUN alone only works when both peers' NATs are traversable directly —
+// it fails in exactly the way just observed (one-way audio, missing video)
+// when one side is behind a stricter NAT (very common on cellular/mobile
+// networks). TURN relays media through a third-party server as a fallback
+// when a direct peer-to-peer path isn't possible. These are the Open Relay
+// Project's public free-tier TURN credentials — fine for a demo/portfolio
+// project, but a real production deployment should use a dedicated TURN
+// provider (Metered.ca, Twilio, or self-hosted coturn) since this is a
+// shared, rate-limited public relay.
 const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
@@ -45,8 +59,8 @@ export const CallProvider = ({ children }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const [callState, setCallState] = useState("idle"); 
-  const [callType, setCallType] = useState(null); 
+  const [callState, setCallState] = useState("idle"); // idle | calling | ringing | connected
+  const [callType, setCallType] = useState(null); // 'audio' | 'video'
   const [remoteUser, setRemoteUser] = useState(null);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
@@ -57,10 +71,10 @@ export const CallProvider = ({ children }) => {
   const pcRef = useRef(null);
   const callIdRef = useRef(null);
   const localStreamRef = useRef(null);
-  const remoteMediaStreamRef = useRef(null); 
+  const remoteMediaStreamRef = useRef(null); // accumulator, see createPeerConnection
   const pendingCandidatesRef = useRef([]);
   const ringTimeoutRef = useRef(null);
-  const incomingRef = useRef(null); 
+  const incomingRef = useRef(null); // the raw 'call-incoming' signal payload
 
   const authHeader = async () => ({
     headers: { Authorization: `Bearer ${await getToken()}` },
@@ -80,6 +94,9 @@ export const CallProvider = ({ children }) => {
     if (pcRef.current) {
       pcRef.current.onicecandidate = null;
       pcRef.current.ontrack = null;
+      pcRef.current.onconnectionstatechange = null;
+      pcRef.current.oniceconnectionstatechange = null;
+      pcRef.current.onsignalingstatechange = null;
       pcRef.current.close();
       pcRef.current = null;
     }
@@ -101,6 +118,11 @@ export const CallProvider = ({ children }) => {
 
   const createPeerConnection = useCallback(
     (toUserId) => {
+      // A fresh accumulator per call — tracks get added to this single,
+      // stable MediaStream object as they arrive, instead of relying on
+      // e.streams[0] always being the same reference across multiple
+      // ontrack firings. Belt-and-suspenders alongside the srcObject
+      // reassignment guard in ActiveCall.jsx.
       remoteMediaStreamRef.current = new MediaStream();
 
       const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -118,6 +140,10 @@ export const CallProvider = ({ children }) => {
       };
 
       pc.ontrack = (e) => {
+        // Diagnostic — check DevTools console on both devices during a
+        // call. readyState should be "live" and enabled should be true;
+        // anything else means the track itself is broken upstream of any
+        // rendering code.
         console.log(
           "[ontrack]",
           e.track.kind,
@@ -131,6 +157,16 @@ export const CallProvider = ({ children }) => {
           acc.addTrack(e.track);
         }
         setRemoteStream(acc);
+      };
+      
+      pc.onconnectionstatechange = () => {
+        console.log("[pc] connectionState:", pc.connectionState);
+      };
+      pc.oniceconnectionstatechange = () => {
+        console.log("[pc] iceConnectionState:", pc.iceConnectionState);
+      };
+      pc.onsignalingstatechange = () => {
+        console.log("[pc] signalingState:", pc.signalingState);
       };
 
       return pc;
@@ -168,7 +204,7 @@ export const CallProvider = ({ children }) => {
 
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        console.log(pc.localDescription.sdp);
+
         const headers = await authHeader();
         const { data } = await api.post(
           "/api/call/initiate",
@@ -232,7 +268,6 @@ export const CallProvider = ({ children }) => {
     finishCall(status, duration, remoteUser._id, callIdRef.current, callType);
   }, [remoteUser, callStartedAt, callState, callType, finishCall, cleanup]);
 
-  // ── Incoming call ──────────────────────────────────────────────
   const declineCall = useCallback(
     async (reason = "declined") => {
       const incoming = incomingRef.current;
@@ -354,7 +389,7 @@ export const CallProvider = ({ children }) => {
         }
         case "call-ice-candidate": {
           if (data.callId !== callIdRef.current) return;
-          if (pcRef.current?.remoteDescription) {
+          if (pcRef.current?.currentRemoteDescription) {
             try {
               await pcRef.current.addIceCandidate(
                 new RTCIceCandidate(data.candidate),
@@ -367,10 +402,6 @@ export const CallProvider = ({ children }) => {
         }
         case "call-rejected": {
           if (data.callId !== callIdRef.current) return;
-          // Unlike call-ended, this push always goes to the caller, and the
-          // message's from_user_id is the caller themselves (the callee
-          // rejected it) — so the "other party" to check against is
-          // to_user_id, not from_user_id.
           if (data.message) {
             appendIfChatOpen(data.message, data.message.to_user_id);
           }
