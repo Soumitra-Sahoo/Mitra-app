@@ -1,6 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCall } from "../context/CallContext.jsx";
-import {  Phone,  Mic,  MicOff,  Video,  VideoOff,  Volume2,  Speaker} from "lucide-react";
+import {
+  Phone,
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  Volume2,
+  Speaker,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 const formatDuration = (seconds) => {
@@ -41,8 +49,35 @@ const ActiveCall = () => {
       el.srcObject = localStream || null;
     }
     if (localStream) {
-      el.play().catch(() => {});
+      const videoTrack = localStream.getVideoTracks()[0];
+      console.log(
+        "[local video attach]",
+        "hasStream:", !!localStream,
+        "videoTrack readyState:", videoTrack?.readyState,
+        "videoTrack enabled:", videoTrack?.enabled,
+        "videoTrack muted:", videoTrack?.muted,
+      );
+      el.play()
+        .then(() => console.log("[local video] play() succeeded"))
+        .catch((err) => console.log("[local video] play() failed:", err.name, err.message));
     }
+  }, [localStream]);
+
+  useEffect(() => {
+    if (!localStream) return;
+    const id = setTimeout(() => {
+      const el = localVideoRef.current;
+      if (el) {
+        console.log(
+          "[local video check, 2s later]",
+          "videoWidth:", el.videoWidth,
+          "videoHeight:", el.videoHeight,
+          "paused:", el.paused,
+          "readyState:", el.readyState,
+        );
+      }
+    }, 2000);
+    return () => clearTimeout(id);
   }, [localStream]);
 
   useEffect(() => {
