@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCall } from "../context/CallContext.jsx";
-import { Phone, Mic, MicOff, Video, VideoOff, Volume2, Speaker } from "lucide-react";
+import {  Phone,  Mic,  MicOff,  Video,  VideoOff,  Volume2,  Speaker} from "lucide-react";
 import toast from "react-hot-toast";
 
 const formatDuration = (seconds) => {
@@ -41,9 +41,7 @@ const ActiveCall = () => {
       el.srcObject = localStream || null;
     }
     if (localStream) {
-      el.play().catch((err) => {
-        console.log("[local video] play() issue:", err.name, err.message);
-      });
+      el.play().catch(() => {});
     }
   }, [localStream]);
 
@@ -58,20 +56,29 @@ const ActiveCall = () => {
         .then(() => setBlockedByAutoplay(false))
         .catch((err) => {
           if (err.name === "NotAllowedError") {
-            console.log("[remote video] play() blocked:", err.name, err.message);
             setBlockedByAutoplay(true);
-          } else {
-            console.log("[remote video] play() interrupted (non-fatal):", err.name);
           }
         });
     }
   }, [remoteStream]);
 
+  useEffect(() => {
+    if (!callStartedAt) {
+      setElapsed(0);
+      return;
+    }
+    const id = setInterval(
+      () => setElapsed(Math.floor((Date.now() - callStartedAt) / 1000)),
+      1000,
+    );
+    return () => clearInterval(id);
+  }, [callStartedAt]);
+
   const retryPlay = () => {
     remoteVideoRef.current
       ?.play()
       .then(() => setBlockedByAutoplay(false))
-      .catch((err) => console.log("[remote video] retry play() failed:", err.name));
+      .catch(() => {});
   };
 
   const toggleSpeaker = async () => {
@@ -100,18 +107,6 @@ const ActiveCall = () => {
       toast.error("Couldn't switch audio output");
     }
   };
-
-  useEffect(() => {
-    if (!callStartedAt) {
-      setElapsed(0);
-      return;
-    }
-    const id = setInterval(
-      () => setElapsed(Math.floor((Date.now() - callStartedAt) / 1000)),
-      1000,
-    );
-    return () => clearInterval(id);
-  }, [callStartedAt]);
 
   if (callState !== "calling" && callState !== "connected") return null;
   if (!remoteUser) return null;
@@ -167,7 +162,6 @@ const ActiveCall = () => {
           </button>
         )}
 
-        {/* Local video picture-in-picture */}
         {isVideo && (
           <video
             ref={localVideoRef}
@@ -179,7 +173,6 @@ const ActiveCall = () => {
         )}
       </div>
 
-      {/* Controls */}
       <div className="flex items-center gap-6 pb-10">
         <button
           onClick={toggleMute}

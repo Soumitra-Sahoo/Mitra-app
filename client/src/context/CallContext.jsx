@@ -16,39 +16,54 @@ import { addMessage } from "../features/messages/messagesSlice.js";
 const CallContext = createContext(null);
 export const useCall = () => useContext(CallContext);
 
-// Public STUN servers — enough to establish a connection on most home/mobile
-// networks. Behind a symmetric NAT or strict corporate firewall this alone
-// isn't enough; a real production deployment would add a TURN server here
-// (e.g. coturn, Twilio, or Metered) as a relay fallback.
-// STUN alone only works when both peers' NATs are traversable directly —
-// it fails in exactly the way just observed (one-way audio, missing video)
-// when one side is behind a stricter NAT (very common on cellular/mobile
-// networks). TURN relays media through a third-party server as a fallback
-// when a direct peer-to-peer path isn't possible. These are the Open Relay
-// Project's public free-tier TURN credentials — fine for a demo/portfolio
-// project, but a real production deployment should use a dedicated TURN
-// provider (Metered.ca, Twilio, or self-hosted coturn) since this is a
-// shared, rate-limited public relay.
+const turnUsername = import.meta.env.VITE_TURN_USERNAME;
+const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL;
+
 const ICE_SERVERS = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-    {
-      urls: "turn:openrelay.metered.ca:80",
-      username: "openrelayproject",
-      credential: "openrelayproject",
-    },
-    {
-      urls: "turn:openrelay.metered.ca:443",
-      username: "openrelayproject",
-      credential: "openrelayproject",
-    },
-    {
-      urls: "turn:openrelay.metered.ca:443?transport=tcp",
-      username: "openrelayproject",
-      credential: "openrelayproject",
-    },
-  ],
+  iceServers:
+    turnUsername && turnCredential
+      ? [
+          { urls: "stun:stun.relay.metered.ca:80" },
+          {
+            urls: "turn:global.relay.metered.ca:80",
+            username: turnUsername,
+            credential: turnCredential,
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80?transport=tcp",
+            username: turnUsername,
+            credential: turnCredential,
+          },
+          {
+            urls: "turn:global.relay.metered.ca:443",
+            username: turnUsername,
+            credential: turnCredential,
+          },
+          {
+            urls: "turns:global.relay.metered.ca:443?transport=tcp",
+            username: turnUsername,
+            credential: turnCredential,
+          },
+        ]
+      : [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+          {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
+          {
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
+          {
+            urls: "turn:openrelay.metered.ca:443?transport=tcp",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
+        ],
 };
 
 const RING_TIMEOUT_MS = 30000;
@@ -71,10 +86,10 @@ export const CallProvider = ({ children }) => {
   const pcRef = useRef(null);
   const callIdRef = useRef(null);
   const localStreamRef = useRef(null);
-  const remoteMediaStreamRef = useRef(null); // accumulator, see createPeerConnection
+  const remoteMediaStreamRef = useRef(null);
   const pendingCandidatesRef = useRef([]);
   const ringTimeoutRef = useRef(null);
-  const incomingRef = useRef(null); // the raw 'call-incoming' signal payload
+  const incomingRef = useRef(null);
 
   const authHeader = async () => ({
     headers: { Authorization: `Bearer ${await getToken()}` },
@@ -118,11 +133,6 @@ export const CallProvider = ({ children }) => {
 
   const createPeerConnection = useCallback(
     (toUserId) => {
-      // A fresh accumulator per call — tracks get added to this single,
-      // stable MediaStream object as they arrive, instead of relying on
-      // e.streams[0] always being the same reference across multiple
-      // ontrack firings. Belt-and-suspenders alongside the srcObject
-      // reassignment guard in ActiveCall.jsx.
       remoteMediaStreamRef.current = new MediaStream();
 
       const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -140,33 +150,11 @@ export const CallProvider = ({ children }) => {
       };
 
       pc.ontrack = (e) => {
-        // Diagnostic — check DevTools console on both devices during a
-        // call. readyState should be "live" and enabled should be true;
-        // anything else means the track itself is broken upstream of any
-        // rendering code.
-        console.log(
-          "[ontrack]",
-          e.track.kind,
-          "readyState:",
-          e.track.readyState,
-          "enabled:",
-          e.track.enabled,
-        );
         const acc = remoteMediaStreamRef.current;
         if (acc && !acc.getTracks().some((t) => t.id === e.track.id)) {
           acc.addTrack(e.track);
         }
         setRemoteStream(acc);
-      };
-      
-      pc.onconnectionstatechange = () => {
-        console.log("[pc] connectionState:", pc.connectionState);
-      };
-      pc.oniceconnectionstatechange = () => {
-        console.log("[pc] iceConnectionState:", pc.iceConnectionState);
-      };
-      pc.onsignalingstatechange = () => {
-        console.log("[pc] signalingState:", pc.signalingState);
       };
 
       return pc;
@@ -185,10 +173,6 @@ export const CallProvider = ({ children }) => {
           audio: true,
           video: type === "video",
         });
-        console.log(
-          "[local stream/startCall]",
-          stream.getTracks().map((t) => `${t.kind} readyState=${t.readyState} enabled=${t.enabled}`),
-        );
         localStreamRef.current = stream;
         setLocalStream(stream);
         setCallType(type);
@@ -306,10 +290,6 @@ export const CallProvider = ({ children }) => {
         audio: true,
         video: type === "video",
       });
-      console.log(
-        "[local stream/acceptCall]",
-        stream.getTracks().map((t) => `${t.kind} readyState=${t.readyState} enabled=${t.enabled}`),
-      );
       localStreamRef.current = stream;
       setLocalStream(stream);
 
@@ -345,7 +325,6 @@ export const CallProvider = ({ children }) => {
 
   const handleSignal = useCallback(
     async (data) => {
-      console.log("[call signal received]", data.type, data);
       switch (data.type) {
         case "call-incoming": {
           if (callState !== "idle") {
