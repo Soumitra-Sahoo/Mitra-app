@@ -74,8 +74,8 @@ export const CallProvider = ({ children }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const [callState, setCallState] = useState("idle"); // idle | calling | ringing | connected
-  const [callType, setCallType] = useState(null); // 'audio' | 'video'
+  const [callState, setCallState] = useState("idle"); 
+  const [callType, setCallType] = useState(null); 
   const [remoteUser, setRemoteUser] = useState(null);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
@@ -90,6 +90,7 @@ export const CallProvider = ({ children }) => {
   const pendingCandidatesRef = useRef([]);
   const ringTimeoutRef = useRef(null);
   const incomingRef = useRef(null);
+  const busyRef = useRef(false);
 
   const authHeader = async () => ({
     headers: { Authorization: `Bearer ${await getToken()}` },
@@ -129,6 +130,7 @@ export const CallProvider = ({ children }) => {
     callIdRef.current = null;
     pendingCandidatesRef.current = [];
     incomingRef.current = null;
+    busyRef.current = false;
   }, []);
 
   const createPeerConnection = useCallback(
@@ -164,10 +166,11 @@ export const CallProvider = ({ children }) => {
 
   const startCall = useCallback(
     async (toUser, type) => {
-      if (callState !== "idle") {
+      if (callState !== "idle" || busyRef.current) {
         toast.error("You're already in a call");
         return;
       }
+      busyRef.current = true;
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
@@ -282,7 +285,8 @@ export const CallProvider = ({ children }) => {
 
   const acceptCall = useCallback(async () => {
     const incoming = incomingRef.current;
-    if (!incoming) return;
+    if (!incoming || busyRef.current) return;
+    busyRef.current = true;
     const { from, callType: type, sdp, callId } = incoming;
 
     try {

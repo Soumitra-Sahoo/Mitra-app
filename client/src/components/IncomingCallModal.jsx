@@ -1,11 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import { useCall } from "../context/CallContext.jsx";
-import { Phone, Video } from "lucide-react";
+import { Phone, PhoneOff, Video } from "lucide-react";
 
 const IncomingCallModal = () => {
   const { callState, remoteUser, callType, acceptCall, declineCall } = useCall();
+  const [responded, setResponded] = useState(false);
+
+  React.useEffect(() => {
+    if (callState !== "ringing") setResponded(false);
+  }, [callState]);
 
   if (callState !== "ringing" || !remoteUser) return null;
+
+  const handleAccept = () => {
+    if (responded) return;
+    setResponded(true);
+    acceptCall();
+  };
+
+  const handleDecline = () => {
+    if (responded) return;
+    setResponded(true);
+    declineCall("declined");
+  };
 
   return (
     <div className="fixed inset-0 z-[300] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -29,15 +46,17 @@ const IncomingCallModal = () => {
 
         <div className="flex justify-center gap-6 mt-8">
           <button
-            onClick={() => declineCall("declined")}
-            className="size-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition active:scale-95"
+            onClick={handleDecline}
+            disabled={responded}
+            className="size-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             title="Decline"
           >
-            <Phone className="size-6" />
+            <PhoneOff className="size-6" />
           </button>
           <button
-            onClick={acceptCall}
-            className="size-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition active:scale-95"
+            onClick={handleAccept}
+            disabled={responded}
+            className="size-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             title="Accept"
           >
             <Phone className="size-6" />
