@@ -1,4 +1,3 @@
-import fs from "fs";
 import imagekit from "../configs/imageKit.js";
 import Message from "../models/Message.js";
 import { verifyToken } from "@clerk/backend";
@@ -8,29 +7,16 @@ const connections = {};
 
 // Helper to push SSE event to a user
 const pushEvent = (userId, payload) => {
-  const hasConnection = !!connections[userId];
-  // Temporary diagnostic log — check Vercel's function logs for this line
-  // when testing a call. If it says "connected? false", the recipient's
-  // SSE stream wasn't open/known to this server instance at push time,
-  // which is the actual reason the incoming-call popup never appeared.
-  console.log(
-    `[pushEvent] type=${payload.type} to=${userId} connected?=${hasConnection}`,
-  );
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `[pushEvent] type=${payload.type} to=${userId} connected?=${!!connections[userId]}`,
+    );
+  }
   if (connections[userId]) {
     connections[userId].write(`data: ${JSON.stringify(payload)}\n\n`);
   }
 };
 
-// controller function for the SSE endpoint
-//
-// IMPORTANT: this route intentionally does NOT use the `protect` middleware.
-// Browsers' native EventSource API cannot send custom headers (no
-// Authorization: Bearer <token>), so a header-based auth check always fails
-// for this specific route — the request arrives unauthenticated and
-// `protect` returns a JSON error, which breaks EventSource entirely (it
-// expects a text/event-stream response and aborts on anything else).
-// Instead, the client passes the token as a query param, and we verify it
-// manually here using Clerk's backend SDK.
 export const sseController = async (req, res) => {
   const { userId } = req.params;
   const { token } = req.query;
@@ -106,9 +92,8 @@ export const sendMessage = async (req, res) => {
     let message_type = image ? "image" : "text";
 
     if (message_type === "image") {
-      const fileBuffer = fs.readFileSync(image.path);
       const response = await imagekit.upload({
-        file: fileBuffer,
+        file: image.buffer,
         fileName: image.originalname,
       });
       media_url = imagekit.url({

@@ -21,7 +21,9 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 <h1 className="text-3xl font-bold text-gray-900">
                   {user.full_name}
                 </h1>
-                <Verified className="size-5 text-blue-500" />
+                {user.verified && (
+                  <Verified className="size-5 text-blue-500" />
+                )}
               </div>
               <p className="text-gray-600">
                 {user.username ? `@${user.username}` : "Add a username"}

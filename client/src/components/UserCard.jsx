@@ -20,13 +20,11 @@ const UserCard = ({ user }) => {
         "/api/user/follow",
         { id: user._id },
         {
-          // **
           headers: { Authorization: `Bearer ${token}` },
         },
       );
       if (data.success) {
         toast.success(data.message);
-        const token = await getToken();
         dispatch(fetchUser(token));
       } else {
         toast.error(data.message);
@@ -89,7 +87,6 @@ const UserCard = ({ user }) => {
         </div>
       </div>
       <div className="flex mt-4 gap-2">
-        {/* Follow Button */}
         <button
           onClick={handleFollow}
           disabled={currentUser?.following.includes(user._id)}
@@ -98,7 +95,6 @@ const UserCard = ({ user }) => {
           <UserPlus className="size-4" />{" "}
           {currentUser?.following.includes(user._id) ? "Following" : "Follow"}
         </button>
-        {/* Connection Requset Button / Message Button */}
         <button
           onClick={handleConnectionReqest}
           className="flex items-center justify-center w-14 bg-slate-100 hover:bg-blue-50 text-slate-700 group rounded-xl cursor-pointer active:scale-95 transition-all duration-300"

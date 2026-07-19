@@ -34,7 +34,7 @@ userRouter.post("/unfollow", protect, unfollowUser);
 userRouter.post("/connect", protect, sendConnectionReqest);
 userRouter.post("/accept", protect, acceptConnectionRequest);
 userRouter.get("/connections", protect, getUserConnections);
-userRouter.post("/profiles", getUserProfiles);
+userRouter.post("/profiles", protect, getUserProfiles);
 userRouter.get("/recent-messages", protect, getUserRecentMessages);
 userRouter.get("/may-know", protect, getPeopleYouMayKnow);
 userRouter.get("/onboarding", protect, getOnboardingStatus);

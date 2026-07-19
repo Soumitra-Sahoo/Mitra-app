@@ -7,7 +7,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
     let timer, progressInterval;
     if (viewStory && viewStory.media_type !== "video") {
       setProgress(0);
-      const duration = 7000; //7 seconds for text stories
+      const duration = 7000; 
       const setTime = 40;
       let elapsed = 0;
 
@@ -16,7 +16,6 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
         setProgress((elapsed / duration) * 100);
       }, setTime);
 
-      //Close story after duration(7 seconds)
       timer = setTimeout(() => {
         setViewStory(null);
       }, duration);
@@ -94,7 +93,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
         />
         <div className="flex items-center gap-1">
           <span>{viewStory.user?.full_name}</span>
-          <BadgeCheck size={18} />
+          {viewStory.user?.verified && <BadgeCheck size={18} />}
         </div>
       </div>
       {/* Close Button */}

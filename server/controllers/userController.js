@@ -1,7 +1,6 @@
 import imagekit from "../configs/imageKit.js";
 import Connection from "../models/Connection.js";
 import User from "../models/User.js";
-import fs from "fs";
 import Post from "../models/Post.js";
 import { inngest } from "../inngest/index.js";
 import Notification from "../models/Notification.js";
@@ -38,9 +37,8 @@ const updateUserData = async (req, res) => {
     const cover = req.files.cover && req.files.cover[0];
 
     if (profile) {
-      const buffer = fs.readFileSync(profile.path);
       const response = await imagekit.upload({
-        file: buffer,
+        file: profile.buffer,
         fileName: profile.originalname,
       });
 
@@ -57,9 +55,8 @@ const updateUserData = async (req, res) => {
     }
 
     if (cover) {
-      const buffer = fs.readFileSync(cover.path);
       const response = await imagekit.upload({
-        file: buffer,
+        file: cover.buffer,
         fileName: cover.originalname,
       });
 
@@ -323,11 +320,18 @@ const acceptConnectionRequest = async (req, res) => {
 const getUserProfiles = async (req, res) => {
   try {
     const { profileId } = req.body;
-    const profile = await User.findById(profileId);
+    // .select('-email') — this endpoint returns someone else's profile to
+    // any logged-in user viewing it, so it must never include their email
+    // address. getUserData (the "my own profile" endpoint) is the only
+    // place that should return the full document including email.
+    const profile = await User.findById(profileId).select("-email");
     if (!profile) {
       return res.json({ success: false, message: "Profile not found" });
     }
-    const posts = await Post.find({ user: profileId }).populate("user");
+    const posts = await Post.find({ user: profileId }).populate(
+      "user",
+      "-email",
+    );
     res.json({ success: true, profile, posts });
   } catch (error) {
     console.log(error);
@@ -344,17 +348,22 @@ const getPeopleYouMayKnow = async (req, res) => {
       ...me.following.map(String),
       ...me.connections.map(String),
     ]);
+
+    // Single batched query instead of one findById per followed user —
+    // the old version did a sequential DB round-trip per entry in
+    // me.following, which doesn't scale (200 follows = 200 round-trips
+    // on every Discover page load).
+    const followedUsers = await User.find({
+      _id: { $in: me.following },
+    }).select("following connections");
+
     const mutualPool = new Set();
-    for (const followedId of me.following) {
-      const followed = await User.findById(followedId).select(
-        "following connections",
-      );
-      if (!followed) continue;
+    followedUsers.forEach((followed) => {
       [...followed.following, ...followed.connections].forEach((id) => {
         const s = String(id);
         if (!exclude.has(s)) mutualPool.add(s);
       });
-    }
+    });
 
     let suggestions = [];
     if (mutualPool.size > 0) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Image, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -9,11 +9,18 @@ import { useNavigate } from "react-router-dom";
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const user = useSelector((state) => state.user.value);
   const navigate = useNavigate();
   const { getToken } = useAuth();
+
+  useEffect(() => {
+    const urls = images.map((img) => URL.createObjectURL(img));
+    setPreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [images]);
 
   const handleSubmit = async () => {
   if (!images.length && !content) {
@@ -93,7 +100,7 @@ const CreatePost = () => {
               {images.map((image, i) => (
                 <div key={i} className=" relative group">
                   <img
-                    src={URL.createObjectURL(image)}
+                    src={previews[i]}
                     className="h-20 rounded-md"
                     alt=""
                   />

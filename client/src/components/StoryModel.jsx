@@ -13,6 +13,7 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
     const [text, setText] = useState("");
     const [media, setMedia] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [saving, setSaving] = useState(false);
 
     const { getToken } = useAuth();
 
@@ -57,15 +58,17 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
     const handleCreateStory = async () => {
         const media_type = mode === 'media' ? media?.type.startsWith('image') ? 'image' : "video" : "text";
         if(media_type === "text" && !text){
-            throw new Error('Please enter some text');
+            toast.error('Please enter some text');
+            return;
         }
         let formData = new FormData();
         formData.append('content', text);
         formData.append('media_type', media_type);
-        formData.append('media', media);
+        if (media) formData.append('media', media);
         formData.append('background_color', background);
 
         const token = await getToken();
+        setSaving(true);
         try {
             const { data } = await api.post('/api/story/create', formData, {
                 headers: {Authorization: `Bearer ${token}`}
@@ -80,6 +83,8 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
             }
         } catch (error) {
             toast.error(error.message);
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -124,9 +129,12 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
                     <Upload size={18}/> Photo/Video
                 </label>
             </div>
-            <button onClick={()=>toast.promise(handleCreateStory(), {
-                loading: 'Saving...',})} className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer'>
-                <Sparkle size={18}/> Create Story
+            <button
+                onClick={handleCreateStory}
+                disabled={saving}
+                className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer disabled:opacity-60'
+            >
+                <Sparkle size={18}/> {saving ? "Saving…" : "Create Story"}
             </button>
         </div>
     </div>

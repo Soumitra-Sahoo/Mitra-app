@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Pencil } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser } from "../features/user/userSlice.js";
@@ -18,6 +18,28 @@ const ProfileModel = ({ setShowEdit }) => {
     full_name: user.full_name,
     cover_photo: null,
   });
+  const [profilePreview, setProfilePreview] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
+
+  useEffect(() => {
+    if (!editForm.profile_picture) {
+      setProfilePreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(editForm.profile_picture);
+    setProfilePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [editForm.profile_picture]);
+
+  useEffect(() => {
+    if (!editForm.cover_photo) {
+      setCoverPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(editForm.cover_photo);
+    setCoverPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [editForm.cover_photo]);
 
   const handleSaveProfile = async (e) => {
   e.preventDefault();
@@ -83,11 +105,7 @@ const ProfileModel = ({ setShowEdit }) => {
                 />
                 <div className="group/profile relative">
                   <img
-                    src={
-                      editForm.profile_picture
-                        ? URL.createObjectURL(editForm.profile_picture)
-                        : user.profile_picture
-                    }
+                    src={profilePreview || user.profile_picture}
                     alt=""
                     className="w-24 h-24 rounded-full object-cover mt-2"
                   />
@@ -118,11 +136,7 @@ const ProfileModel = ({ setShowEdit }) => {
                 />
                 <div className="group/cover relative">
                   <img
-                    src={
-                      editForm.cover_photo
-                        ? URL.createObjectURL(editForm.cover_photo)
-                        : user.cover_photo
-                    }
+                    src={coverPreview || user.cover_photo}
                     className="w-80 h-40 rounded-lg bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 object-cover mt-2"
                     alt=""
                   />

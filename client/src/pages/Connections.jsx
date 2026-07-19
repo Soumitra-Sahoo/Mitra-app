@@ -64,7 +64,7 @@ const Connections = () => {
       );
       if (data.success) {
         toast.success(data.message);
-        dispatch(fetchConnections(await getToken()));
+        dispatch(fetchConnections(token));
       } else {
         toast.error(data.message);
       }
@@ -116,9 +116,9 @@ const Connections = () => {
             >
               <tab.icon className="size-4" />
               <span className="ml-1">{tab.label}</span>
-              {tab.count !== undefined && (
+              {tab.value.length > 0 && (
                 <span className="ml-2 text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
-                  {tab.count}
+                  {tab.value.length}
                 </span>
               )}
             </button>
@@ -130,7 +130,7 @@ const Connections = () => {
           {dataArray
             .find((item) => item.label === currentTab)
             .value.map((user) => (
-              <div className="w-full max-w-88 flex gap-5 p-6 bg-white shadow rounded-md">
+              <div key={user._id} className="w-full max-w-88 flex gap-5 p-6 bg-white shadow rounded-md">
                 <img
                   src={user.profile_picture}
                   alt=""
@@ -143,14 +143,12 @@ const Connections = () => {
                     {user.bio ? `${user.bio.slice(0, 60)}...` : "No bio"}
                   </p>
                   <div className="flex max-ms:flex-col gap-2 mt-4">
-                    {
-                      <button
-                        onClick={() => navigate(`/profile/${user._id}`)}
-                        className="w-full p-2 text-sm rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer"
-                      >
-                        View Profile
-                      </button>
-                    }
+                    <button
+                      onClick={() => navigate(`/profile/${user._id}`)}
+                      className="w-full p-2 text-sm rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer"
+                    >
+                      View Profile
+                    </button>
                     {currentTab === "Following" && (
                       <button
                         onClick={() => handleUnfollow(user._id)}
