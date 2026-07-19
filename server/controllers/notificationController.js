@@ -1,6 +1,5 @@
 import Notification from "../models/Notification.js";
 
-// Get all notifications for the logged-in user
 export const getNotifications = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -37,8 +36,15 @@ export const markAllRead = async (req, res) => {
 // Mark single notification as read
 export const markOneRead = async (req, res) => {
   try {
+    const { userId } = req.auth();
     const { id } = req.params;
-    await Notification.findByIdAndUpdate(id, { read: true });
+    const result = await Notification.findOneAndUpdate(
+      { _id: id, recipient_id: userId },
+      { read: true },
+    );
+    if (!result) {
+      return res.json({ success: false, message: "Notification not found" });
+    }
     res.json({ success: true });
   } catch (error) {
     console.log(error);

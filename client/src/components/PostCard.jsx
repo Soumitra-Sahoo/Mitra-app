@@ -1,81 +1,28 @@
-import {
-  BadgeCheck,
-  Heart,
-  MessageCircle,
-  Share2,
-  X,
-  Send,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import {BadgeCheck, Heart, MessageCircle, Share2, X,
+  Send, Trash2, ChevronDown, ChevronUp, } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
-const Lightbox = ({ images, startIndex, onClose }) => {
-  const [current, setCurrent] = useState(startIndex);
-  const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
-  const next = () => setCurrent((c) => (c + 1) % images.length);
+import Lightbox from "./Lightbox.jsx";
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  return (
-    <div
-      className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center"
-      onClick={onClose}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+const renderContentWithHashtags = (text, navigate) => {
+  if (!text) return null;
+  return text.split(/(#\w+)/g).map((part, i) =>
+    /^#\w+$/.test(part) ? (
+      <span
+        key={i}
+        className="text-indigo-600 cursor-pointer hover:underline"
+        onClick={() => navigate(`/hashtag/${part.slice(1)}`)}
       >
-        <X className="size-6" />
-      </button>
-      {images.length > 1 && (
-        <span className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
-          {current + 1} / {images.length}
-        </span>
-      )}
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              prev();
-            }}
-            className="absolute left-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition text-2xl"
-          >
-            ‹
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              next();
-            }}
-            className="absolute right-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition text-2xl"
-          >
-            ›
-          </button>
-        </>
-      )}
-      <img
-        src={images[current]}
-        alt=""
-        className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-        onClick={(e) => e.stopPropagation()}
-      />
-    </div>
+        {part}
+      </span>
+    ) : (
+      part
+    ),
   );
 };
 
@@ -83,10 +30,11 @@ const CommentItem = ({
   comment,
   postId,
   currentUser,
-  token,
+  getToken,
   onDelete,
   depth = 0,
 }) => {
+  const navigate = useNavigate();
   const [showReplies, setShowReplies] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showReplyBox, setShowReplyBox] = useState(false);
@@ -95,6 +43,7 @@ const CommentItem = ({
 
   const handleLikeComment = async () => {
     try {
+      const token = await getToken();
       const { data } = await api.post(
         `/api/comment/like/${comment._id}`,
         {},
@@ -114,6 +63,7 @@ const CommentItem = ({
   const handleReply = async () => {
     if (!replyText.trim()) return;
     try {
+      const token = await getToken();
       const { data } = await api.post(
         "/api/comment/add",
         {
@@ -146,7 +96,9 @@ const CommentItem = ({
           <p className="text-xs font-semibold text-slate-800">
             {comment.user_id?.full_name}
           </p>
-          <p className="text-sm text-slate-700 mt-0.5">{comment.text}</p>
+          <p className="text-sm text-slate-700 mt-0.5">
+            {renderContentWithHashtags(comment.text, navigate)}
+          </p>
         </div>
         <div className="flex items-center gap-3 mt-1 px-1 text-xs text-slate-400">
           <span>{moment(comment.createdAt).fromNow()}</span>
@@ -219,7 +171,7 @@ const CommentItem = ({
               comment={reply}
               postId={postId}
               currentUser={currentUser}
-              token={token}
+              getToken={getToken}
               onDelete={onDelete}
               depth={depth + 1}
             />
@@ -229,12 +181,19 @@ const CommentItem = ({
   );
 };
 
-// ── Post Detail Modal ──────────────────────────────────────────────────────────
-const PostModal = ({ post, onClose, currentUser, getToken }) => {
+const PostModal = ({
+  post,
+  onClose,
+  currentUser,
+  getToken,
+  likes,
+  onLikeChange,
+  commentCount,
+  onCommentCountChange,
+}) => {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
-  const [likes, setLikes] = useState(post.likes_count);
   const navigate = useNavigate();
 
   const fetchComments = async () => {
@@ -273,6 +232,7 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
       if (data.success) {
         setCommentText("");
         setComments((prev) => [{ ...data.comment, replies: [] }, ...prev]);
+        onCommentCountChange((prev) => prev + 1);
       } else toast.error(data.message);
     } catch (e) {
       toast.error(e.message);
@@ -287,6 +247,7 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
       });
       if (data.success) {
         setComments((prev) => prev.filter((c) => c._id !== commentId));
+        onCommentCountChange((prev) => Math.max(0, prev - 1));
         toast.success("Deleted");
       }
     } catch (e) {
@@ -305,7 +266,7 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
         },
       );
       if (data.success) {
-        setLikes((prev) =>
+        onLikeChange((prev) =>
           prev.includes(currentUser?._id)
             ? prev.filter((id) => id !== currentUser?._id)
             : [...prev, currentUser?._id],
@@ -315,11 +276,6 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
       toast.error(e.message);
     }
   };
-
-  const postWithHashtags = post.content?.replace(
-    /(#\w+)/g,
-    '<span class="text-indigo-600 cursor-pointer hover:underline">$1</span>',
-  );
 
   return (
     <div
@@ -364,7 +320,9 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
                   <span className="font-semibold text-sm">
                     {post.user.full_name}
                   </span>
-                  <BadgeCheck className="size-4 text-blue-500" />
+                  {post.user.verified && (
+                    <BadgeCheck className="size-4 text-blue-500" />
+                  )}
                 </div>
                 <p className="text-xs text-gray-400">
                   @{post.user.username} · {moment(post.createdAt).fromNow()}
@@ -382,10 +340,9 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
           {/* Content */}
           {post.content && (
             <div className="px-4 py-3 border-b border-slate-100">
-              <p
-                className="text-sm text-gray-800"
-                dangerouslySetInnerHTML={{ __html: postWithHashtags }}
-              />
+              <p className="text-sm text-gray-800 whitespace-pre-line">
+                {renderContentWithHashtags(post.content, navigate)}
+              </p>
             </div>
           )}
 
@@ -407,7 +364,7 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
                 comment={comment}
                 postId={post._id}
                 currentUser={currentUser}
-                token={null}
+                getToken={getToken}
                 onDelete={handleDeleteComment}
               />
             ))}
@@ -427,7 +384,7 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
               </button>
               <div className="flex items-center gap-1">
                 <MessageCircle className="size-5" />
-                <span>{comments.length}</span>
+                <span>{commentCount}</span>
               </div>
             </div>
             {/* Add comment */}
@@ -462,12 +419,8 @@ const PostModal = ({ post, onClose, currentUser, getToken }) => {
 };
 
 const PostCard = ({ post, onDelete }) => {
-  const postWithHashtags = post.content?.replace(
-    /(#\w+)/g,
-    '<span class="text-indigo-600 cursor-pointer hover:underline" data-tag="$1">$1</span>',
-  );
   const [likes, setLikes] = useState(post.likes_count);
-  const [commentCount, setCommentCount] = useState(post.comments_count ?? 0);
+  const [commentCount, setCommentCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [lightbox, setLightbox] = useState({ open: false, index: 0 });
 
@@ -510,18 +463,19 @@ const PostCard = ({ post, onDelete }) => {
     }
   };
 
-  const handleContentClick = (e) => {
-    const tag = e.target.getAttribute("data-tag");
-    if (tag) navigate(`/hashtag/${tag.replace("#", "")}`);
-  };
-
   const handleShare = async () => {
     const url = `${window.location.origin}/profile/${post.user._id}`;
-    if (navigator.share) {
-      await navigator.share({ title: post.user.full_name, url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: post.user.full_name, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        toast.error("Couldn't share this post");
+      }
     }
   };
 
@@ -560,6 +514,10 @@ const PostCard = ({ post, onDelete }) => {
           onClose={() => setShowModal(false)}
           currentUser={currentUser}
           getToken={getToken}
+          likes={likes}
+          onLikeChange={setLikes}
+          commentCount={commentCount}
+          onCommentCountChange={setCommentCount}
         />
       )}
 
@@ -579,7 +537,9 @@ const PostCard = ({ post, onDelete }) => {
               <span className="font-semibold text-slate-800">
                 {post.user.full_name}
               </span>
-              <BadgeCheck className="size-4 text-blue-500" />
+              {post.user.verified && (
+                <BadgeCheck className="size-4 text-blue-500" />
+              )}
             </div>
             <div className="text-gray-500 text-sm">
               @{post.user.username} • {moment(post.createdAt).fromNow()}
@@ -589,11 +549,9 @@ const PostCard = ({ post, onDelete }) => {
 
         {/* Content */}
         {post.content && (
-          <div
-            className="text-gray-800 text-sm whitespace-pre-line"
-            dangerouslySetInnerHTML={{ __html: postWithHashtags }}
-            onClick={handleContentClick}
-          />
+          <div className="text-gray-800 text-sm whitespace-pre-line">
+            {renderContentWithHashtags(post.content, navigate)}
+          </div>
         )}
 
         {/* Images — click opens lightbox */}

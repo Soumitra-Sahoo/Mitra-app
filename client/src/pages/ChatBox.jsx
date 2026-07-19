@@ -32,6 +32,7 @@ const ChatBox = () => {
 
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [user, setUser] = useState(null);
   const [showEmoji, setShowEmoji] = useState(false);
   const [isTyping, setIsTyping] = useState(false); 
@@ -42,6 +43,19 @@ const ChatBox = () => {
 
   const isOnline = onlineUsers.has(userId);
   const otherTyping = typingUsers[userId]; 
+
+  // Same reasoning as CreatePost/ProfileModel: generate the object URL
+  // once when `image` changes, revoke it when replaced/cleared/unmounted,
+  // instead of calling URL.createObjectURL fresh on every render.
+  useEffect(() => {
+    if (!image) {
+      setImagePreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(image);
+    setImagePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [image]);
 
   const fetchUserMessages = async () => {
     try {
@@ -305,7 +319,7 @@ const ChatBox = () => {
           <label htmlFor="chat-image" className="flex-shrink-0 cursor-pointer">
             {image ? (
               <img
-                src={URL.createObjectURL(image)}
+                src={imagePreview}
                 className="h-8 rounded"
                 alt=""
               />
