@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Pencil } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUser } from "../features/user/userSlice.js";
+import { updateUser } from "../store/slices/userSlice.js";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 
@@ -18,6 +18,7 @@ const ProfileModel = ({ setShowEdit }) => {
     full_name: user.full_name,
     cover_photo: null,
   });
+  
   const [profilePreview, setProfilePreview] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
 
