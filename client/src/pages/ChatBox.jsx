@@ -9,7 +9,7 @@ import {
   addMessage,
   fetchMessages,
   resetMessages,
-} from "../features/messages/messagesSlice.js";
+} from "../store/slices/messagesSlice.js";
 import { toast } from "react-hot-toast";
 import { useOnline } from "../App.jsx";
 import { useCall } from "../context/CallContext.jsx";

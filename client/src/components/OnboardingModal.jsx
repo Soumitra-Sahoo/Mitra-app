@@ -3,16 +3,8 @@ import { useAuth } from "@clerk/clerk-react";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
-import { updateUser } from "../features/user/userSlice.js";
-import {
-  Pencil,
-  Sparkles,
-  MapPin,
-  FileText,
-  User,
-  ChevronRight,
-  X,
-} from "lucide-react";
+import { updateUser } from "../store/slices/userSlice.js";
+import {Pencil, Sparkles, MapPin, FileText, User, ChevronRight,  X} from "lucide-react";
 
 const STEPS = ["welcome", "avatar", "bio", "location", "done"];
 

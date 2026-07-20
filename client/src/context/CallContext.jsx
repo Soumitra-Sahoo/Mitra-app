@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
-import { addMessage } from "../features/messages/messagesSlice.js";
+import { addMessage } from "../store/slices/messagesSlice.js";
 
 const CallContext = createContext(null);
 export const useCall = () => useContext(CallContext);
@@ -289,11 +289,19 @@ export const CallProvider = ({ children }) => {
     busyRef.current = true;
     const { from, callType: type, sdp, callId } = incoming;
 
+    let stream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: type === "video",
       });
+    } catch (error) {
+      toast.error("Could not access camera/microphone");
+      declineCall("busy");
+      return;
+    }
+
+    try {
       localStreamRef.current = stream;
       setLocalStream(stream);
 
@@ -322,7 +330,7 @@ export const CallProvider = ({ children }) => {
       setCallState("connected");
       setCallStartedAt(Date.now());
     } catch (error) {
-      toast.error("Could not access camera/microphone");
+      toast.error(error.message || "Could not connect the call");
       declineCall("busy");
     }
   }, [createPeerConnection, getToken, declineCall]);

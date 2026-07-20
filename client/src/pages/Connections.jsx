@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
-import { fetchConnections } from "../features/connections/connectionSlice.js";
+import { fetchConnections } from "../store/slices/connectionSlice.js";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
 

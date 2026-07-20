@@ -5,7 +5,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
-import { fetchUser } from "../features/user/userSlice.js";
+import { fetchUser } from "../store/slices/userSlice.js";
 
 const UserCard = ({ user }) => {
   const currentUser = useSelector((state) => state.user.value);
@@ -87,6 +87,7 @@ const UserCard = ({ user }) => {
         </div>
       </div>
       <div className="flex mt-4 gap-2">
+        {/* Follow Button */}
         <button
           onClick={handleFollow}
           disabled={currentUser?.following.includes(user._id)}

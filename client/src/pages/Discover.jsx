@@ -5,7 +5,7 @@ import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
-import { fetchUser } from "../features/user/userSlice.js";
+import { fetchUser } from "../store/slices/userSlice.js";
 
 const UserCardSkeleton = () => (
   <div className="w-full sm:w-[320px] p-5 bg-white/80 border border-white/50 rounded-3xl shadow-lg animate-pulse">

@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-} from "react";
+import React, {useRef, useEffect, useState, createContext, useContext} from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Feed from "./pages/Feed";
@@ -20,12 +14,12 @@ import HashtagPage from "./pages/HashtagPage";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch } from "react-redux";
-import { fetchUser } from "./features/user/userSlice.js";
-import { fetchConnections } from "./features/connections/connectionSlice.js";
+import { fetchUser } from "./store/slices/userSlice.js";
+import { fetchConnections } from "./store/slices/connectionSlice.js";
 import {
   addMessage,
   markMessagesSeen,
-} from "./features/messages/messagesSlice.js";
+} from "./store/slices/messagesSlice.js";
 import Notification from "./components/Notification.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
 import Loading from "./components/Loading.jsx";
