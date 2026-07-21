@@ -1,5 +1,17 @@
-import {BadgeCheck, Heart, MessageCircle, Share2, X,
-  Send, Trash2, ChevronDown, ChevronUp, } from "lucide-react";
+import {
+  BadgeCheck,
+  Heart,
+  MessageCircle,
+  Share2,
+  X,
+  Send,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  Users,
+  Lock,
+} from "lucide-react";
 import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +35,20 @@ const renderContentWithHashtags = (text, navigate) => {
     ) : (
       part
     ),
+  );
+};
+
+const VisibilityIcon = ({ visibility }) => {
+  if (!visibility || visibility === "public") return null;
+  const Icon = visibility === "private" ? Lock : Users;
+  const label = visibility === "private" ? "Private" : "Followers only";
+  return (
+    <span
+      title={label}
+      className="inline-flex items-center gap-0.5 text-slate-400"
+    >
+      <Icon className="size-3" />
+    </span>
   );
 };
 
@@ -473,6 +499,8 @@ const PostCard = ({ post, onDelete }) => {
         toast.success("Link copied to clipboard!");
       }
     } catch (error) {
+      // AbortError just means the user closed the native share sheet —
+      // that's a normal cancellation, not a failure worth surfacing.
       if (error.name !== "AbortError") {
         toast.error("Couldn't share this post");
       }

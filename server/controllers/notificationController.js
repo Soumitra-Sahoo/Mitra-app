@@ -14,11 +14,10 @@ export const getNotifications = async (req, res) => {
     res.json({ success: true, notifications });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Mark all notifications as read
 export const markAllRead = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -29,11 +28,10 @@ export const markAllRead = async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Mark single notification as read
 export const markOneRead = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -43,16 +41,15 @@ export const markOneRead = async (req, res) => {
       { read: true },
     );
     if (!result) {
-      return res.json({ success: false, message: "Notification not found" });
+      return res.status(404).json({ success: false, message: "Notification not found" });
     }
     res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get unread count (for badge)
 export const getUnreadCount = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -63,6 +60,6 @@ export const getUnreadCount = async (req, res) => {
     res.json({ success: true, count });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

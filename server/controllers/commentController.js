@@ -2,15 +2,26 @@ import Comment from "../models/Comment.js";
 import Post from "../models/Post.js";
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
+import { canViewPost } from "../utils/postVisibility.js";
 
-// Add comment (or reply when parent_id is provided)
 export const addComment = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { post_id, text, parent_id } = req.body;
 
     if (!text?.trim())
-      return res.json({ success: false, message: "Comment cannot be empty" });
+      return res.status(400).json({ success: false, message: "Comment cannot be empty" });
+
+    const post = await Post.findById(post_id).populate("user");
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+    if (!canViewPost(post, userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to comment on this post",
+      });
+    }
 
     const comment = await Comment.create({
       post_id,
@@ -22,11 +33,10 @@ export const addComment = async (req, res) => {
       "user_id",
       "full_name profile_picture username",
     );
-    const post = await Post.findById(post_id);
-    if (post && post.user !== userId) {
+    if (post.user._id !== userId) {
       const sender = await User.findById(userId);
       await Notification.create({
-        recipient_id: post.user,
+        recipient_id: post.user._id,
         sender_id: userId,
         type: parent_id ? "reply" : "comment",
         post_id,
@@ -38,7 +48,7 @@ export const addComment = async (req, res) => {
     res.json({ success: true, comment: populated });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -64,11 +74,10 @@ export const getComments = async (req, res) => {
     res.json({ success: true, comments: withReplies });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Delete comment
 export const deleteComment = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -76,9 +85,9 @@ export const deleteComment = async (req, res) => {
 
     const comment = await Comment.findById(comment_id);
     if (!comment)
-      return res.json({ success: false, message: "Comment not found" });
+      return res.status(404).json({ success: false, message: "Comment not found" });
     if (comment.user_id !== userId)
-      return res.json({ success: false, message: "Unauthorized" });
+      return res.status(403).json({ success: false, message: "Unauthorized" });
 
     // Delete comment and all its replies
     await Comment.deleteMany({ _id: comment_id });
@@ -87,11 +96,10 @@ export const deleteComment = async (req, res) => {
     res.json({ success: true, message: "Comment deleted" });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Like / unlike a comment
 export const likeComment = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -99,7 +107,7 @@ export const likeComment = async (req, res) => {
 
     const comment = await Comment.findById(comment_id);
     if (!comment)
-      return res.json({ success: false, message: "Comment not found" });
+      return res.status(404).json({ success: false, message: "Comment not found" });
 
     const liked = comment.likes.includes(userId);
     if (liked) {
@@ -116,11 +124,10 @@ export const likeComment = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get comment count for a post
 export const getCommentCount = async (req, res) => {
   try {
     const { post_id } = req.params;
@@ -128,6 +135,6 @@ export const getCommentCount = async (req, res) => {
     res.json({ success: true, count });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

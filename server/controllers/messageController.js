@@ -2,10 +2,8 @@ import imagekit from "../configs/imageKit.js";
 import Message from "../models/Message.js";
 import { verifyToken } from "@clerk/backend";
 
-// Create an empty object to store SSE connections
 const connections = {};
 
-// Helper to push SSE event to a user
 const pushEvent = (userId, payload) => {
   if (process.env.NODE_ENV !== "production") {
     console.log(
@@ -31,8 +29,6 @@ export const sseController = async (req, res) => {
     return res.status(401).json({ success: false, message: "Invalid or expired token" });
   }
 
-  // A user may only open a stream for their own inbox — otherwise anyone
-  // could read someone else's messages/typing/presence by guessing an id.
   if (authUserId !== userId) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
@@ -46,7 +42,6 @@ export const sseController = async (req, res) => {
 
   connections[userId] = res;
 
-  // Broadcast online status to everyone connected
   Object.keys(connections).forEach((connectedUserId) => {
     if (connectedUserId !== userId) {
       pushEvent(connectedUserId, { type: "user_online", userId });
@@ -55,7 +50,6 @@ export const sseController = async (req, res) => {
 
   res.write(`data: ${JSON.stringify({ type: "connected" })}\n\n`);
 
-  // Send current online users list to the newly connected user
   const onlineUsers = Object.keys(connections).filter((id) => id !== userId);
   res.write(
     `data: ${JSON.stringify({ type: "online_users", users: onlineUsers })}\n\n`,
@@ -77,11 +71,10 @@ export const typingIndicator = (req, res) => {
     pushEvent(to, { type: "typing", from, isTyping });
     res.json({ success: true });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Send Message
 export const sendMessage = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -116,18 +109,22 @@ export const sendMessage = async (req, res) => {
     });
 
     res.json({ success: true, message });
-
-    const messageWithUserData = await Message.findById(message._id).populate(
-      "from_user_id",
-    );
-    pushEvent(to_user_id, messageWithUserData);
+    try {
+      const messageWithUserData = await Message.findById(message._id).populate(
+        "from_user_id",
+      );
+      pushEvent(to_user_id, messageWithUserData);
+    } catch (pushError) {
+      console.log("Failed to push new message event:", pushError);
+    }
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: error.message });
+    }
   }
 };
 
-// Get Chat Messages
 export const getChatMessages = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -150,7 +147,7 @@ export const getChatMessages = async (req, res) => {
     res.json({ success: true, messages });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -163,7 +160,7 @@ export const getUserRecentMessages = async (req, res) => {
     res.json({ success: true, messages });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

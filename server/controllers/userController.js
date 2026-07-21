@@ -4,16 +4,18 @@ import User from "../models/User.js";
 import Post from "../models/Post.js";
 import { inngest } from "../inngest/index.js";
 import Notification from "../models/Notification.js";
+import { canViewPost } from "../utils/postVisibility.js";
 
 const getUserData = async (req, res) => {
   try {
     const { userId } = req.auth();
     const user = await User.findById(userId);
-    if (!user) return res.json({ success: false, message: "User not found" });
+    if (!user)
+      return res.status(404).json({ success: false, message: "User not found" });
     res.json({ success: true, user });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -79,7 +81,7 @@ const updateUserData = async (req, res) => {
     res.json({ success: true, user, message: "Profile updated successfully" });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -107,7 +109,7 @@ const discoverUsers = async (req, res) => {
 
     res.json({success: true, users});
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -120,7 +122,7 @@ const followUser = async (req, res) => {
     const { id } = req.body;
     const user = await User.findById(userId);
     if (user.following.includes(id)) {
-      return res.json({
+      return res.status(409).json({
         success: false,
         message: "You are already following this user",
       });
@@ -148,7 +150,7 @@ const followUser = async (req, res) => {
       message: "Now you are following this user",
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -175,7 +177,7 @@ const unfollowUser = async (req, res) => {
       message: "You are no longer following this user",
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -192,7 +194,7 @@ const sendConnectionReqest = async (req, res) => {
       createdAt: { $gt: last24Hours },
     });
     if (connectionRequests.length >= 20) {
-      return res.json({
+      return res.status(429).json({
         success: false,
         message:
           "You have sent more than 20 connection requests in the last 24 hours",
@@ -222,16 +224,16 @@ const sendConnectionReqest = async (req, res) => {
         message: "Connection request sent successfully",
       });
     } else if (connection && connection.status === "accepted") {
-      return res.json({
+      return res.status(409).json({
         success: false,
         message: "You are already connected with this user",
       });
     }
 
-    return res.json({ success: false, message: "Connection request pending" });
+    return res.status(409).json({ success: false, message: "Connection request pending" });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -261,7 +263,7 @@ const getUserConnections = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -276,7 +278,7 @@ const acceptConnectionRequest = async (req, res) => {
     });
 
     if (!connection) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "Connection not found",
       });
@@ -310,7 +312,7 @@ const acceptConnectionRequest = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -319,23 +321,21 @@ const acceptConnectionRequest = async (req, res) => {
 
 const getUserProfiles = async (req, res) => {
   try {
+    const { userId: viewerId } = req.auth();
     const { profileId } = req.body;
-    // .select('-email') — this endpoint returns someone else's profile to
-    // any logged-in user viewing it, so it must never include their email
-    // address. getUserData (the "my own profile" endpoint) is the only
-    // place that should return the full document including email.
     const profile = await User.findById(profileId).select("-email");
     if (!profile) {
-      return res.json({ success: false, message: "Profile not found" });
+      return res.status(404).json({ success: false, message: "Profile not found" });
     }
     const posts = await Post.find({ user: profileId }).populate(
       "user",
       "-email",
     );
-    res.json({ success: true, profile, posts });
+    const visiblePosts = posts.filter((post) => canViewPost(post, viewerId));
+    res.json({ success: true, profile, posts: visiblePosts });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -348,11 +348,6 @@ const getPeopleYouMayKnow = async (req, res) => {
       ...me.following.map(String),
       ...me.connections.map(String),
     ]);
-
-    // Single batched query instead of one findById per followed user —
-    // the old version did a sequential DB round-trip per entry in
-    // me.following, which doesn't scale (200 follows = 200 round-trips
-    // on every Discover page load).
     const followedUsers = await User.find({
       _id: { $in: me.following },
     }).select("following connections");
@@ -383,7 +378,7 @@ const getPeopleYouMayKnow = async (req, res) => {
     res.json({ success: true, users: suggestions });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -391,7 +386,8 @@ const getOnboardingStatus = async (req, res) => {
   try {
     const { userId } = req.auth();
     const user = await User.findById(userId);
-    if (!user) return res.json({ success: false, message: "User not found" });
+    if (!user)
+      return res.status(404).json({ success: false, message: "User not found" });
 
     const needsOnboarding =
       !user.bio ||
@@ -402,7 +398,7 @@ const getOnboardingStatus = async (req, res) => {
     res.json({ success: true, needsOnboarding, user });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
