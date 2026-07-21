@@ -3,12 +3,18 @@ import Post from "../models/Post.js";
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
 import Comment from "../models/Comment.js";
+import { canViewPost, ALLOWED_VISIBILITIES } from "../utils/postVisibility.js";
 
 const addPost = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { content, post_type } = req.body;
+    let { visibility } = req.body;
     const images = req.files;
+
+    if (!visibility || !ALLOWED_VISIBILITIES.includes(visibility)) {
+      visibility = "public";
+    }
 
     let image_urls = [];
 
@@ -38,6 +44,7 @@ const addPost = async (req, res) => {
       content,
       image_urls,
       post_type,
+      visibility,
     });
 
     res.json({
@@ -46,7 +53,7 @@ const addPost = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -77,16 +84,18 @@ const getFeedPosts = async (req, res) => {
         .limit(limit),
       Post.countDocuments(filter),
     ]);
+    
+    const visiblePosts = posts.filter((post) => canViewPost(post, userId));
 
     res.json({
       success: true,
-      posts,
+      posts: visiblePosts,
       page,
       hasMore: skip + posts.length < total,
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -98,12 +107,19 @@ const likePost = async (req, res) => {
     const { userId } = req.auth();
     const { postId } = req.body;
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("user");
 
     if (!post) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "Post not found",
+      });
+    }
+
+    if (!canViewPost(post, userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to view this post",
       });
     }
 
@@ -132,11 +148,11 @@ const likePost = async (req, res) => {
       { $addToSet: { likes_count: userId } },
     );
 
-    if (post.user !== userId) {
+    if (post.user._id !== userId) {
       const sender = await User.findById(userId);
 
       await Notification.create({
-        recipient_id: post.user,
+        recipient_id: post.user._id,
         sender_id: userId,
         type: "like",
         post_id: postId,
@@ -150,7 +166,7 @@ const likePost = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -165,14 +181,14 @@ const deletePost = async (req, res) => {
     const post = await Post.findById(postId);
 
     if (!post) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "Post not found",
       });
     }
 
     if (post.user !== userId) {
-      return res.json({
+      return res.status(403).json({
         success: false,
         message: "You can only delete your own posts",
       });
@@ -188,7 +204,7 @@ const deletePost = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -197,6 +213,7 @@ const deletePost = async (req, res) => {
 
 const getPostsByHashtag = async (req, res) => {
   try {
+    const { userId } = req.auth();
     const { tag } = req.params;
 
     const posts = await Post.find({
@@ -208,14 +225,16 @@ const getPostsByHashtag = async (req, res) => {
       .populate("user")
       .sort({ createdAt: -1 });
 
+    const visiblePosts = posts.filter((post) => canViewPost(post, userId));
+
     res.json({
       success: true,
-      posts,
+      posts: visiblePosts,
       tag,
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -229,6 +248,7 @@ const getTrendingHashtags = async (req, res) => {
         $exists: true,
         $ne: "",
       },
+      $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
     })
       .select("content")
       .limit(500);
@@ -259,7 +279,7 @@ const getTrendingHashtags = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });

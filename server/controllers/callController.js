@@ -24,7 +24,7 @@ export const initiateCall = async (req, res) => {
     const { to, callType, sdp, callId } = req.body;
 
     if (!(await isConnected(userId, to))) {
-      return res.json({
+      return res.status(403).json({
         success: false,
         message: "You can only call your connections",
       });
@@ -45,7 +45,7 @@ export const initiateCall = async (req, res) => {
     });
 
     if (!delivered) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "Couldn't reach this user right now — they may be offline",
       });
@@ -54,7 +54,7 @@ export const initiateCall = async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -64,14 +64,14 @@ export const answerCall = async (req, res) => {
     const { to, callId, sdp } = req.body;
 
     if (!(await isConnected(userId, to))) {
-      return res.json({ success: false, message: "Not connected" });
+      return res.status(403).json({ success: false, message: "Not connected" });
     }
 
     pushEvent(to, { type: "call-answered", callId, sdp });
     res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -81,14 +81,14 @@ export const sendIceCandidate = async (req, res) => {
     const { to, callId, candidate } = req.body;
 
     if (!(await isConnected(userId, to))) {
-      return res.json({ success: false, message: "Not connected" });
+      return res.status(403).json({ success: false, message: "Not connected" });
     }
 
     pushEvent(to, { type: "call-ice-candidate", callId, candidate });
     res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -117,7 +117,7 @@ export const rejectCall = async (req, res) => {
     res.json({ success: true, message: populated });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -143,6 +143,6 @@ export const endCall = async (req, res) => {
     res.json({ success: true, message: populated });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
