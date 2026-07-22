@@ -5,6 +5,7 @@ const postSchema = new mongoose.Schema({
     content: {type: String},
     image_urls: [{type: String}],
     post_type: {type: String, enum: ['text', 'image', 'text_with_image'], required: true},
+    visibility: {type: String, enum: ['public', 'followers', 'private'], default: 'public'},
     likes_count: [{type: String, ref: 'User'}] 
 }, {timestamps: true, minimize: false});
 

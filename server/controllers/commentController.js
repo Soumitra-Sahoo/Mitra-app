@@ -54,7 +54,19 @@ export const addComment = async (req, res) => {
 
 export const getComments = async (req, res) => {
   try {
+    const { userId } = req.auth();
     const { post_id } = req.params;
+
+    const post = await Post.findById(post_id).populate("user");
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+    if (!canViewPost(post, userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to view this post's comments",
+      });
+    }
 
     const topLevel = await Comment.find({ post_id, parent_id: null })
       .populate("user_id", "full_name profile_picture username")
@@ -89,7 +101,6 @@ export const deleteComment = async (req, res) => {
     if (comment.user_id !== userId)
       return res.status(403).json({ success: false, message: "Unauthorized" });
 
-    // Delete comment and all its replies
     await Comment.deleteMany({ _id: comment_id });
     await Comment.deleteMany({ parent_id: comment_id });
 
@@ -108,6 +119,14 @@ export const likeComment = async (req, res) => {
     const comment = await Comment.findById(comment_id);
     if (!comment)
       return res.status(404).json({ success: false, message: "Comment not found" });
+
+    const post = await Post.findById(comment.post_id).populate("user");
+    if (!post || !canViewPost(post, userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to interact with this comment",
+      });
+    }
 
     const liked = comment.likes.includes(userId);
     if (liked) {
@@ -130,7 +149,20 @@ export const likeComment = async (req, res) => {
 
 export const getCommentCount = async (req, res) => {
   try {
+    const { userId } = req.auth();
     const { post_id } = req.params;
+
+    const post = await Post.findById(post_id).populate("user");
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+    if (!canViewPost(post, userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to view this post",
+      });
+    }
+
     const count = await Comment.countDocuments({ post_id });
     res.json({ success: true, count });
   } catch (error) {
