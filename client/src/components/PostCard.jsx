@@ -45,7 +45,7 @@ const VisibilityIcon = ({ visibility }) => {
   return (
     <span
       title={label}
-      className="inline-flex items-center gap-0.5 text-slate-400"
+      className="inline-flex items-center gap-0.5 text-slate-400 dark:text-slate-500"
     >
       <Icon className="size-3" />
     </span>
@@ -118,15 +118,15 @@ const CommentItem = ({
         alt=""
       />
       <div className="flex-1">
-        <div className="bg-slate-50 rounded-2xl px-3 py-2">
-          <p className="text-xs font-semibold text-slate-800">
+        <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl px-3 py-2">
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
             {comment.user_id?.full_name}
           </p>
-          <p className="text-sm text-slate-700 mt-0.5">
+          <p className="text-sm text-slate-700 dark:text-slate-200 mt-0.5">
             {renderContentWithHashtags(comment.text, navigate)}
           </p>
         </div>
-        <div className="flex items-center gap-3 mt-1 px-1 text-xs text-slate-400">
+        <div className="flex items-center gap-3 mt-1 px-1 text-xs text-slate-400 dark:text-slate-500">
           <span>{moment(comment.createdAt).fromNow()}</span>
           <button
             onClick={handleLikeComment}
@@ -164,7 +164,7 @@ const CommentItem = ({
               onChange={(e) => setReplyText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleReply()}
               placeholder="Write a reply..."
-              className="flex-1 text-xs border border-slate-200 rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-400"
+              className="flex-1 text-xs border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-400"
             />
             <button
               onClick={handleReply}
@@ -309,7 +309,7 @@ const PostModal = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left: Images */}
@@ -328,7 +328,7 @@ const PostModal = ({
           className={`flex flex-col flex-1 ${post.image_urls?.length > 0 ? "md:w-1/2" : "w-full"}`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-100">
+          <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
             <div
               onClick={() => {
                 navigate(`/profile/${post.user._id}`);
@@ -350,14 +350,15 @@ const PostModal = ({
                     <BadgeCheck className="size-4 text-blue-500" />
                   )}
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1">
                   @{post.user.username} · {moment(post.createdAt).fromNow()}
+                  <VisibilityIcon visibility={post.visibility} />
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-700 transition"
+              className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 transition"
             >
               <X className="size-5" />
             </button>
@@ -365,8 +366,8 @@ const PostModal = ({
 
           {/* Content */}
           {post.content && (
-            <div className="px-4 py-3 border-b border-slate-100">
-              <p className="text-sm text-gray-800 whitespace-pre-line">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+              <p className="text-sm text-gray-800 dark:text-slate-100 whitespace-pre-line">
                 {renderContentWithHashtags(post.content, navigate)}
               </p>
             </div>
@@ -375,12 +376,12 @@ const PostModal = ({
           {/* Comments list */}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1">
             {loading && (
-              <p className="text-center text-sm text-slate-400 mt-4">
+              <p className="text-center text-sm text-slate-400 dark:text-slate-500 mt-4">
                 Loading comments...
               </p>
             )}
             {!loading && comments.length === 0 && (
-              <p className="text-center text-sm text-slate-400 mt-8">
+              <p className="text-center text-sm text-slate-400 dark:text-slate-500 mt-8">
                 No comments yet. Be the first!
               </p>
             )}
@@ -397,8 +398,8 @@ const PostModal = ({
           </div>
 
           {/* Actions */}
-          <div className="border-t border-slate-100 p-4">
-            <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+          <div className="border-t border-slate-100 dark:border-slate-800 p-4">
+            <div className="flex items-center gap-4 mb-3 text-sm text-gray-600 dark:text-slate-300">
               <button
                 onClick={handleLike}
                 className="flex items-center gap-1 hover:text-red-500 transition"
@@ -420,7 +421,7 @@ const PostModal = ({
                 className="size-8 rounded-full object-cover"
                 alt=""
               />
-              <div className="flex-1 flex items-center border border-slate-200 rounded-full overflow-hidden px-3">
+              <div className="flex-1 flex items-center border border-slate-200 dark:border-slate-700 rounded-full overflow-hidden px-3">
                 <input
                   type="text"
                   value={commentText}
@@ -499,8 +500,6 @@ const PostCard = ({ post, onDelete }) => {
         toast.success("Link copied to clipboard!");
       }
     } catch (error) {
-      // AbortError just means the user closed the native share sheet —
-      // that's a normal cancellation, not a failure worth surfacing.
       if (error.name !== "AbortError") {
         toast.error("Couldn't share this post");
       }
@@ -549,7 +548,7 @@ const PostCard = ({ post, onDelete }) => {
         />
       )}
 
-      <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
         {/* User Info */}
         <div
           onClick={() => navigate(`/profile/${post.user._id}`)}
@@ -562,22 +561,23 @@ const PostCard = ({ post, onDelete }) => {
           />
           <div>
             <div className="flex items-center space-x-1">
-              <span className="font-semibold text-slate-800">
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
                 {post.user.full_name}
               </span>
               {post.user.verified && (
                 <BadgeCheck className="size-4 text-blue-500" />
               )}
             </div>
-            <div className="text-gray-500 text-sm">
+            <div className="text-gray-500 dark:text-slate-400 text-sm flex items-center gap-1">
               @{post.user.username} • {moment(post.createdAt).fromNow()}
+              <VisibilityIcon visibility={post.visibility} />
             </div>
           </div>
         </div>
 
         {/* Content */}
         {post.content && (
-          <div className="text-gray-800 text-sm whitespace-pre-line">
+          <div className="text-gray-800 dark:text-slate-100 text-sm whitespace-pre-line">
             {renderContentWithHashtags(post.content, navigate)}
           </div>
         )}
@@ -590,7 +590,7 @@ const PostCard = ({ post, onDelete }) => {
                 key={index}
                 src={img}
                 onClick={() => setLightbox({ open: true, index })}
-                className={`w-full bg-slate-100 rounded-xl cursor-pointer hover:opacity-95 transition
+                className={`w-full bg-slate-100 dark:bg-slate-800 rounded-xl cursor-pointer hover:opacity-95 transition
                   ${post.image_urls.length === 1 ? "col-span-2 max-h-[500px] object-contain" : "h-64 object-cover"}`}
                 alt=""
               />
@@ -599,7 +599,7 @@ const PostCard = ({ post, onDelete }) => {
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-4 text-gray-600 text-sm pt-2 border-t border-gray-200">
+        <div className="flex items-center gap-4 text-gray-600 dark:text-slate-300 text-sm pt-2 border-t border-gray-200 dark:border-slate-700">
           <button
             onClick={handleLike}
             className="flex items-center gap-1 hover:text-red-500 transition"
