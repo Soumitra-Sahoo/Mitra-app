@@ -1,8 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 body { font-family: "Inter", sans-serif; }
 h1, h2, h3, .font-heading { font-family: "Sora", sans-serif; }
+
+body, .transition-theme {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;

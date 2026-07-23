@@ -10,17 +10,17 @@ import { Hash, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PostSkeleton = () => (
-  <div className="bg-white rounded-3xl p-5 animate-pulse shadow w-full max-w-3xl">
+  <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 animate-pulse shadow w-full max-w-3xl">
     <div className="flex gap-3 items-center mb-4">
-      <div className="w-10 h-10 rounded-full bg-slate-200" />
+      <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
       <div className="space-y-2">
-        <div className="w-28 h-3 bg-slate-200 rounded" />
-        <div className="w-20 h-3 bg-slate-100 rounded" />
+        <div className="w-28 h-3 bg-slate-200 dark:bg-slate-700 rounded" />
+        <div className="w-20 h-3 bg-slate-100 dark:bg-slate-800 rounded" />
       </div>
     </div>
-    <div className="h-3 bg-slate-200 rounded mb-2" />
-    <div className="h-3 bg-slate-200 rounded w-3/4 mb-4" />
-    <div className="h-52 bg-slate-200 rounded-2xl" />
+    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
+    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-4" />
+    <div className="h-52 bg-slate-200 dark:bg-slate-700 rounded-2xl" />
   </div>
 );
 
@@ -107,7 +107,7 @@ const Feed = () => {
               .fill(0)
               .map((_, i) => <PostSkeleton key={i} />)
           ) : feeds.length === 0 ? (
-            <div className="text-center mt-16 text-slate-400">
+            <div className="text-center mt-16 text-slate-400 dark:text-slate-500">
               <p className="text-lg font-medium">Your feed is empty</p>
               <p className="text-sm mt-1">
                 Follow people or connect to see their posts
@@ -127,29 +127,29 @@ const Feed = () => {
             </div>
           )}
           {!loading && !hasMore && feeds.length > 0 && (
-            <p className="text-slate-400 text-sm py-4">You're all caught up 🎉</p>
+            <p className="text-slate-400 dark:text-slate-500 text-sm py-4">You're all caught up 🎉</p>
           )}
         </div>
       </div>
 
       <div className="max-xl:hidden sticky top-0 space-y-4">
-        <div className="max-w-xs bg-white text-xs p-4 rounded-2xl inline-flex flex-col gap-2 shadow">
-          <h3 className="text-slate-800 font-semibold">Sponsored</h3>
+        <div className="max-w-xs bg-white dark:bg-slate-900 text-xs p-4 rounded-2xl inline-flex flex-col gap-2 shadow">
+          <h3 className="text-slate-800 dark:text-slate-100 font-semibold">Sponsored</h3>
           <img
             src={assets.sponsored_img}
             alt=""
             className="w-75 h-50 rounded-xl"
           />
-          <p className="text-slate-600 font-medium">Email marketing</p>
-          <p className="text-slate-400">
+          <p className="text-slate-600 dark:text-slate-300 font-medium">Email marketing</p>
+          <p className="text-slate-400 dark:text-slate-500">
             Supercharge your marketing with a powerful, easy-to-use platform
             built for results.
           </p>
         </div>
 
         {hashtags.length > 0 && (
-          <div className="max-w-xs bg-white text-xs p-4 rounded-2xl shadow">
-            <h3 className="text-slate-800 font-semibold flex items-center gap-2 mb-3">
+          <div className="max-w-xs bg-white dark:bg-slate-900 text-xs p-4 rounded-2xl shadow">
+            <h3 className="text-slate-800 dark:text-slate-100 font-semibold flex items-center gap-2 mb-3">
               <TrendingUp className="size-4 text-indigo-500" /> Trending
               Hashtags
             </h3>
@@ -158,13 +158,13 @@ const Feed = () => {
                 <button
                   key={tag}
                   onClick={() => navigate(`/hashtag/${tag}`)}
-                  className="flex items-center justify-between w-full px-3 py-1.5 rounded-xl hover:bg-slate-50 transition group"
+                  className="flex items-center justify-between w-full px-3 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition group"
                 >
                   <span className="flex items-center gap-1 text-indigo-600 font-medium group-hover:underline">
                     <Hash className="size-3" />
                     {tag}
                   </span>
-                  <span className="text-slate-400">{count} posts</span>
+                  <span className="text-slate-400 dark:text-slate-500">{count} posts</span>
                 </button>
               ))}
             </div>

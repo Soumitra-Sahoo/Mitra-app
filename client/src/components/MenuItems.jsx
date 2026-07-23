@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom'
 
 const MenuItems = ({ setSidebarOpen, unreadCount = 0, setUnreadCount }) => {
   return (
-    <div className='px-6 text-gray-600 space-y-1 font-medium'>
+    <div className='px-6 text-gray-600 dark:text-slate-300 space-y-1 font-medium'>
       {menuItemsData.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
@@ -18,7 +18,7 @@ const MenuItems = ({ setSidebarOpen, unreadCount = 0, setUnreadCount }) => {
             `group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300
             ${isActive
               ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-200'
-              : 'text-slate-600 hover:bg-slate-100 hover:translate-x-1'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:translate-x-1'
             }`
           }
         >

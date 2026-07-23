@@ -118,7 +118,7 @@ const CommentItem = ({
         alt=""
       />
       <div className="flex-1">
-        <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl px-3 py-2">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-3 py-2">
           <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
             {comment.user_id?.full_name}
           </p>
@@ -164,11 +164,11 @@ const CommentItem = ({
               onChange={(e) => setReplyText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleReply()}
               placeholder="Write a reply..."
-              className="flex-1 text-xs border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-400"
+              className="flex-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-400"
             />
             <button
               onClick={handleReply}
-              className="text-indigo-600 hover:text-indigo-800"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
             >
               <Send className="size-4" />
             </button>
@@ -421,18 +421,18 @@ const PostModal = ({
                 className="size-8 rounded-full object-cover"
                 alt=""
               />
-              <div className="flex-1 flex items-center border border-slate-200 dark:border-slate-700 rounded-full overflow-hidden px-3">
+              <div className="flex-1 flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-full overflow-hidden px-3">
                 <input
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                   placeholder="Add a comment..."
-                  className="flex-1 py-2 text-sm outline-none"
+                  className="flex-1 py-2 text-sm outline-none bg-transparent text-slate-800 dark:text-slate-100"
                 />
                 <button
                   onClick={handleAddComment}
-                  className="text-indigo-600 hover:text-indigo-800 transition pl-2"
+                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition pl-2"
                 >
                   <Send className="size-4" />
                 </button>

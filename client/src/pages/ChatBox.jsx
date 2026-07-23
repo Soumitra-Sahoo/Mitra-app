@@ -12,6 +12,7 @@ import {
 } from "../store/slices/messagesSlice.js";
 import { toast } from "react-hot-toast";
 import { useOnline } from "../App.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
 import { useCall } from "../context/CallContext.jsx";
 
 const formatCallDuration = (seconds) => {
@@ -28,6 +29,7 @@ const ChatBox = () => {
   const { getToken } = useAuth();
   const dispatch = useDispatch();
   const { onlineUsers, typingUsers } = useOnline();
+  const { resolvedTheme } = useTheme();
   const { callState, startCall } = useCall();
 
   const [text, setText] = useState("");
@@ -44,9 +46,6 @@ const ChatBox = () => {
   const isOnline = onlineUsers.has(userId);
   const otherTyping = typingUsers[userId]; 
 
-  // Same reasoning as CreatePost/ProfileModel: generate the object URL
-  // once when `image` changes, revoke it when replaced/cleared/unmounted,
-  // instead of calling URL.createObjectURL fresh on every render.
   useEffect(() => {
     if (!image) {
       setImagePreview(null);
@@ -155,7 +154,7 @@ const ChatBox = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex items-center gap-3 p-3 md:px-10 xl:pl-42 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 shadow-sm">
+      <div className="flex items-center gap-3 p-3 md:px-10 xl:pl-42 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 dark:border-slate-700 shadow-sm">
         <div className="relative">
           <img
             src={user.profile_picture}
@@ -167,8 +166,8 @@ const ChatBox = () => {
           )}
         </div>
         <div>
-          <p className="font-semibold text-slate-800">{user.full_name}</p>
-          <p className="text-xs text-slate-400">
+          <p className="font-semibold text-slate-800 dark:text-slate-100">{user.full_name}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">
             {otherTyping ? (
               <span className="text-indigo-500 font-medium">typing...</span>
             ) : isOnline ? (
@@ -183,7 +182,7 @@ const ChatBox = () => {
           <button
             onClick={() => startCall(user, "audio")}
             disabled={callState !== "idle"}
-            className="size-9 flex items-center justify-center rounded-full bg-white/70 hover:bg-white text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            className="size-9 flex items-center justify-center rounded-full bg-white/70 dark:bg-slate-900/70 hover:bg-white dark:hover:bg-slate-900 text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
             title="Voice call"
           >
             <Phone className="size-4" />
@@ -191,7 +190,7 @@ const ChatBox = () => {
           <button
             onClick={() => startCall(user, "video")}
             disabled={callState !== "idle"}
-            className="size-9 flex items-center justify-center rounded-full bg-white/70 hover:bg-white text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            className="size-9 flex items-center justify-center rounded-full bg-white/70 dark:bg-slate-900/70 hover:bg-white dark:hover:bg-slate-900 text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
             title="Video call"
           >
             <Video className="size-4" />
@@ -228,7 +227,7 @@ const ChatBox = () => {
                         : "Call cancelled";
                 return (
                   <div key={index} className="flex justify-center">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
                       <CallIcon className="size-3.5" />
                       {label}
                     </div>
@@ -246,7 +245,7 @@ const ChatBox = () => {
                       ${
                         isMyMessage
                           ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-br-none"
-                          : "bg-white text-slate-700 rounded-bl-none border border-slate-100"
+                          : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800"
                       }`}
                   >
                     {message.message_type === "image" && (
@@ -280,10 +279,10 @@ const ChatBox = () => {
                 className="size-7 rounded-full object-cover"
                 alt=""
               />
-              <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex items-center gap-1">
-                <span className="size-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="size-2 bg-slate-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="size-2 bg-slate-400 rounded-full animate-bounce [animation-delay:300ms]" />
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex items-center gap-1">
+                <span className="size-2 bg-slate-400 dark:bg-slate-600 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="size-2 bg-slate-400 dark:bg-slate-600 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="size-2 bg-slate-400 dark:bg-slate-600 rounded-full animate-bounce [animation-delay:300ms]" />
               </div>
             </div>
           )}
@@ -295,21 +294,26 @@ const ChatBox = () => {
       <div className="px-4 pb-5 pt-2 relative">
         {showEmoji && (
           <div className="emoji-wrapper absolute bottom-20 left-4 z-50">
-            <EmojiPicker onEmojiClick={onEmojiClick} height={380} width={320} />
+            <EmojiPicker
+              onEmojiClick={onEmojiClick}
+              height={380}
+              width={320}
+              theme={resolvedTheme}
+            />
           </div>
         )}
 
-        <div className="flex items-center gap-2 pl-3 p-1.5 bg-white w-full max-w-xl mx-auto border border-gray-200 shadow-md rounded-full">
+        <div className="flex items-center gap-2 pl-3 p-1.5 bg-white dark:bg-slate-900 w-full max-w-xl mx-auto border border-gray-200 dark:border-slate-700 shadow-md rounded-full">
           <button
             onClick={() => setShowEmoji((v) => !v)}
-            className="emoji-wrapper text-gray-400 hover:text-yellow-500 transition flex-shrink-0"
+            className="emoji-wrapper text-gray-400 dark:text-slate-500 hover:text-yellow-500 transition flex-shrink-0"
           >
             <Smile className="size-5" />
           </button>
 
           <input
             type="text"
-            className="flex-1 outline-none text-slate-700 text-sm"
+            className="flex-1 outline-none bg-transparent text-slate-700 dark:text-slate-200 text-sm"
             placeholder="Type a message..."
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             onChange={handleTextChange}
@@ -324,7 +328,7 @@ const ChatBox = () => {
                 alt=""
               />
             ) : (
-              <ImageIcon className="size-5 text-gray-400 hover:text-indigo-500 transition" />
+              <ImageIcon className="size-5 text-gray-400 dark:text-slate-500 hover:text-indigo-500 transition" />
             )}
             <input
               type="file"

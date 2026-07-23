@@ -10,19 +10,19 @@ const Message = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
             <MessageSquareText className="size-7 shrink-0" />
             <span>Messages</span>
           </h1>
-          <p className="text-slate-500">Talk to your friends and family</p>
+          <p className="text-slate-500 dark:text-slate-400">Talk to your friends and family</p>
         </div>
 
         <div className="flex flex-col gap-3">
           {connections.length === 0 && (
-            <p className="text-slate-400 text-center mt-16">
+            <p className="text-slate-400 dark:text-slate-500 text-center mt-16">
               No connections yet. Connect with people to start messaging!
             </p>
           )}
@@ -31,7 +31,7 @@ const Message = () => {
             return (
               <div
                 key={user._id}
-                className="max-w-xl flex flex-wrap gap-4 p-5 bg-white shadow-sm rounded-2xl border border-slate-100 hover:shadow-md transition-all"
+                className="max-w-xl flex flex-wrap gap-4 p-5 bg-white dark:bg-slate-900 shadow-sm rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-md transition-all"
               >
                 {/* Avatar + online dot */}
                 <div className="relative self-start">
@@ -46,11 +46,11 @@ const Message = () => {
                 </div>
 
                 <div className="flex-1">
-                  <p className="font-semibold text-slate-800">
+                  <p className="font-semibold text-slate-800 dark:text-slate-100">
                     {user.full_name}
                   </p>
-                  <p className="text-slate-400 text-sm">@{user.username}</p>
-                  <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">
+                  <p className="text-slate-400 dark:text-slate-500 text-sm">@{user.username}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-1">
                     {user.bio}
                   </p>
                   {online && (
@@ -63,14 +63,14 @@ const Message = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => navigate(`/messages/${user._id}`)}
-                    className="size-10 flex items-center justify-center rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 active:scale-95 transition cursor-pointer"
+                    className="size-10 flex items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 active:scale-95 transition cursor-pointer"
                     title="Message"
                   >
                     <MessageSquare className="size-4" />
                   </button>
                   <button
                     onClick={() => navigate(`/profile/${user._id}`)}
-                    className="size-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-95 transition cursor-pointer"
+                    className="size-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 active:scale-95 transition cursor-pointer"
                     title="View Profile"
                   >
                     <Eye className="size-4" />

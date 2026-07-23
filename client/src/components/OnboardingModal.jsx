@@ -4,7 +4,15 @@ import { useDispatch, useSelector } from "react-redux";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
 import { updateUser } from "../store/slices/userSlice.js";
-import {Pencil, Sparkles, MapPin, FileText, User, ChevronRight,  X} from "lucide-react";
+import {
+  Pencil,
+  Sparkles,
+  MapPin,
+  FileText,
+  User,
+  ChevronRight,
+  X,
+} from "lucide-react";
 
 const STEPS = ["welcome", "avatar", "bio", "location", "done"];
 
@@ -75,9 +83,9 @@ const OnboardingModal = () => {
 
   return (
     <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Progress bar */}
-        <div className="h-1 bg-slate-100">
+        <div className="h-1 bg-slate-100 dark:bg-slate-800">
           <div
             className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500"
             style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }}
@@ -91,10 +99,10 @@ const OnboardingModal = () => {
               <div className="size-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="size-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                 Welcome to Mitra! 👋
               </h2>
-              <p className="text-slate-500 mb-8">
+              <p className="text-slate-500 dark:text-slate-400 mb-8">
                 Let's set up your profile so others can get to know you. It only
                 takes a minute.
               </p>
@@ -106,7 +114,7 @@ const OnboardingModal = () => {
               </button>
               <button
                 onClick={() => setShow(false)}
-                className="mt-3 text-sm text-slate-400 hover:text-slate-600 transition w-full"
+                className="mt-3 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition w-full"
               >
                 Skip for now
               </button>
@@ -117,10 +125,10 @@ const OnboardingModal = () => {
           {current === "avatar" && (
             <div className="text-center">
               <User className="size-8 text-indigo-500 mx-auto mb-2" />
-              <h2 className="text-xl font-bold text-slate-900 mb-1">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
                 Add a profile photo
               </h2>
-              <p className="text-slate-500 text-sm mb-6">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
                 Help people recognise you
               </p>
 
@@ -128,7 +136,7 @@ const OnboardingModal = () => {
                 htmlFor="onboard-avatar"
                 className="cursor-pointer group inline-block"
               >
-                <div className="relative size-28 mx-auto rounded-full overflow-hidden bg-slate-100 border-4 border-white shadow-xl ring-2 ring-indigo-200">
+                <div className="relative size-28 mx-auto rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-4 border-white shadow-xl ring-2 ring-indigo-200">
                   {preview ? (
                     <img
                       src={preview}
@@ -167,7 +175,7 @@ const OnboardingModal = () => {
               <div className="flex gap-3 mt-8">
                 <button
                   onClick={() => setStep(step - 1)}
-                  className="flex-1 py-3 border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition"
+                  className="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                 >
                   Back
                 </button>
@@ -185,10 +193,10 @@ const OnboardingModal = () => {
           {current === "bio" && (
             <div>
               <FileText className="size-8 text-indigo-500 mb-2" />
-              <h2 className="text-xl font-bold text-slate-900 mb-1">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
                 Write a bio
               </h2>
-              <p className="text-slate-500 text-sm mb-6">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
                 Tell others a bit about yourself
               </p>
 
@@ -199,16 +207,16 @@ const OnboardingModal = () => {
                   setForm((f) => ({ ...f, bio: e.target.value }))
                 }
                 placeholder="e.g. Frontend developer. Coffee enthusiast. I love building things."
-                className="w-full border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
               />
-              <p className="text-xs text-slate-400 text-right mt-1">
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-right mt-1">
                 {form.bio.length}/150
               </p>
 
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setStep(step - 1)}
-                  className="flex-1 py-3 border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition"
+                  className="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                 >
                   Back
                 </button>
@@ -226,10 +234,10 @@ const OnboardingModal = () => {
           {current === "location" && (
             <div>
               <MapPin className="size-8 text-indigo-500 mb-2" />
-              <h2 className="text-xl font-bold text-slate-900 mb-1">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
                 Where are you from?
               </h2>
-              <p className="text-slate-500 text-sm mb-6">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
                 This helps people find you by location
               </p>
 
@@ -240,13 +248,13 @@ const OnboardingModal = () => {
                   setForm((f) => ({ ...f, location: e.target.value }))
                 }
                 placeholder="e.g. Kolkata, India"
-                className="w-full border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-indigo-400"
               />
 
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setStep(step - 1)}
-                  className="flex-1 py-3 border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition"
+                  className="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                 >
                   Back
                 </button>
@@ -271,10 +279,10 @@ const OnboardingModal = () => {
           {current === "done" && (
             <div className="text-center">
               <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                 You're all set!
               </h2>
-              <p className="text-slate-500 mb-8">
+              <p className="text-slate-500 dark:text-slate-400 mb-8">
                 Your profile is ready. Start exploring Mitra and connecting with
                 people!
               </p>

@@ -6,21 +6,20 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { Provider} from 'react-redux'
 import { store } from "./store/store.js";
 import { CallProvider } from "./context/CallContext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
-}
-
 createRoot(document.getElementById("root")).render(
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-    <BrowserRouter>
-    <Provider store={store}>
-      <CallProvider>
-        <App />
-      </CallProvider>
-    </Provider>
-    </BrowserRouter>
-  </ClerkProvider>
+  <ThemeProvider>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <BrowserRouter>
+      <Provider store={store}>
+        <CallProvider>
+          <App />
+        </CallProvider>
+      </Provider>
+      </BrowserRouter>
+    </ClerkProvider>
+  </ThemeProvider>
 );

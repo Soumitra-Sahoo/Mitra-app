@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import MenuItems from "./MenuItems";
+import ThemeToggle from "./ThemeToggle.jsx";
 import { CirclePlus, LogOut } from "lucide-react";
 import { UserButton, useClerk } from "@clerk/clerk-react";
 import { useSelector } from "react-redux";
@@ -32,7 +33,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <div
-      className={`w-56 xl:w-64 h-screen sticky top-0 bg-white/80 backdrop-blur-xl border-r border-slate-200 shadow-lg flex flex-col justify-between items-center max-sm:fixed max-sm:top-0 max-sm:bottom-0 z-20
+      className={`w-56 xl:w-64 h-screen sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 shadow-lg flex flex-col justify-between items-center max-sm:fixed max-sm:top-0 max-sm:bottom-0 z-20 transition-theme
       ${sidebarOpen ? "translate-x-0" : "max-sm:-translate-x-full"} transition-all duration-300 ease-in-out`}
     >
       <div className="w-full">
@@ -42,7 +43,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           className="w-26 ml-7 my-2 cursor-pointer"
           alt=""
         />
-        <hr className="border-gray-200 mb-8" />
+        <hr className="border-gray-200 dark:border-slate-800 mb-8" />
         <MenuItems
           setSidebarOpen={setSidebarOpen}
           unreadCount={unreadCount}
@@ -56,19 +57,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <CirclePlus className="w-5 h-5" />
           Create Post
         </Link>
+
+        <div className="flex justify-center mt-6">
+          <ThemeToggle />
+        </div>
       </div>
 
-      <div className="w-full border-t border-gray-200 p-4 px-7 flex items-center justify-between">
+      <div className="w-full border-t border-gray-200 dark:border-slate-800 p-4 px-7 flex items-center justify-between">
         <div className="flex gap-2 items-center cursor-pointer">
           <UserButton />
           <div>
-            <h1 className="text-sm font-medium">{user?.full_name}</h1>
-            <p className="text-xs text-gray-500">@{user?.username}</p>
+            <h1 className="text-sm font-medium text-slate-800 dark:text-slate-100">{user?.full_name}</h1>
+            <p className="text-xs text-gray-500 dark:text-slate-400">@{user?.username}</p>
           </div>
         </div>
         <LogOut
           onClick={signOut}
-          className="w-4.5 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+          className="w-4.5 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition cursor-pointer"
         />
       </div>
     </div>
