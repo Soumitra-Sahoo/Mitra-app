@@ -100,7 +100,7 @@ const Connections = () => {
               key={index}
               className="flex flex-col items-center justify-center gap-1 border h-20 w-40 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow rounded-md"
             >
-              <b>{item.value.length}</b>
+              <b className="text-slate-900 dark:text-slate-100">{item.value.length}</b>
               <p className="text-slate-600 dark:text-slate-300">{item.label}</p>
             </div>
           ))}
@@ -112,7 +112,7 @@ const Connections = () => {
             <button
               onClick={() => setCurrentTab(tab.label)}
               key={tab.label}
-              className={`cursor-pointer flex items-center px-3 py-1 text-sm rounded-md transition-colors ${currentTab === tab.label ? "bg-white dark:bg-slate-900 font-medium text-black" : "text-gray-500 dark:text-slate-400 hover:text-black"}`}
+              className={`cursor-pointer flex items-center px-3 py-1 text-sm rounded-md transition-colors ${currentTab === tab.label ? "bg-white dark:bg-slate-900 font-medium text-slate-900 dark:text-slate-100" : "text-gray-500 dark:text-slate-400 hover:text-black dark:hover:text-slate-100"}`}
             >
               <tab.icon className="size-4" />
               <span className="ml-1">{tab.label}</span>

@@ -30,7 +30,7 @@ const addPost = async (req, res) => {
           return imagekit.url({
             path: response.filePath,
             transformation: [
-              { quality: "auto" },
+              { quality: "85" },
               { format: "webp" },
               { width: "1280" },
             ],
@@ -84,7 +84,7 @@ const getFeedPosts = async (req, res) => {
         .limit(limit),
       Post.countDocuments(filter),
     ]);
-    
+
     const visiblePosts = posts.filter((post) => canViewPost(post, userId));
 
     res.json({

@@ -90,13 +90,13 @@ const CreatePost = () => {
               alt=""
             />
             <div className="flex-1">
-              <h2 className="font-semibold">{user.full_name}</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">{user.full_name}</h2>
               <p className="text-sm text-gray-500 dark:text-slate-400">@{user.username}</p>
               <div className="relative inline-block mt-1">
                 <button
                   type="button"
                   onClick={() => setShowVisibilityMenu((v) => !v)}
-                  className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 rounded-full px-2.5 py-1 transition mt-0.5"
+                  className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-full px-2.5 py-1 transition mt-0.5"
                 >
                   {(() => {
                     const current = VISIBILITY_OPTIONS.find((o) => o.value === visibility);

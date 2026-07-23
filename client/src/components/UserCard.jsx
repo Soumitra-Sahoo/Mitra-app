@@ -67,7 +67,7 @@ const UserCard = ({ user }) => {
           className="aspect-square object-cover rounded-full w-20 mx-auto border-4 border-white shadow-2xl"
           alt=""
         />
-        <p className="mt-4 font-semibold">{user.full_name}</p>
+        <p className="mt-4 font-semibold text-slate-900 dark:text-slate-100">{user.full_name}</p>
         {user.username && (
           <p className="text-gray-500 dark:text-slate-400 font-light">@{user.username}</p>
         )}

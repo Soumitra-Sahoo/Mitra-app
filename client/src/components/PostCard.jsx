@@ -242,6 +242,7 @@ const PostModal = ({
     return () => {
       document.body.style.overflow = "";
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddComment = async () => {
@@ -343,7 +344,7 @@ const PostModal = ({
               />
               <div>
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold text-sm">
+                  <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                     {post.user.full_name}
                   </span>
                   {post.user.verified && (
@@ -466,6 +467,7 @@ const PostCard = ({ post, onDelete }) => {
       } catch (_) {}
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post._id]);
 
   const handleLike = async () => {
@@ -500,6 +502,8 @@ const PostCard = ({ post, onDelete }) => {
         toast.success("Link copied to clipboard!");
       }
     } catch (error) {
+      // AbortError just means the user closed the native share sheet —
+      // that's a normal cancellation, not a failure worth surfacing.
       if (error.name !== "AbortError") {
         toast.error("Couldn't share this post");
       }

@@ -47,7 +47,8 @@ const updateUserData = async (req, res) => {
       const url = imagekit.url({
         path: response.filePath,
         transformation: [
-          { quality: "auto" },
+          // See postController.js addPost for why this isn't "auto".
+          { quality: "85" },
           { format: "webp" },
           { width: "512" },
         ],
@@ -65,7 +66,7 @@ const updateUserData = async (req, res) => {
       const url = imagekit.url({
         path: response.filePath,
         transformation: [
-          { quality: "auto" },
+          { quality: "85" },
           { format: "webp" },
           { width: "1280" },
         ],

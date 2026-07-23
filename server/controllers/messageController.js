@@ -28,7 +28,6 @@ export const sseController = async (req, res) => {
   } catch (error) {
     return res.status(401).json({ success: false, message: "Invalid or expired token" });
   }
-
   if (authUserId !== userId) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
@@ -41,7 +40,6 @@ export const sseController = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 
   connections[userId] = res;
-
   Object.keys(connections).forEach((connectedUserId) => {
     if (connectedUserId !== userId) {
       pushEvent(connectedUserId, { type: "user_online", userId });
@@ -75,6 +73,7 @@ export const typingIndicator = (req, res) => {
   }
 };
 
+// Send Message
 export const sendMessage = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -92,7 +91,7 @@ export const sendMessage = async (req, res) => {
       media_url = imagekit.url({
         path: response.filePath,
         transformation: [
-          { quality: "auto" },
+          { quality: "85" },
           { format: "webp" },
           { width: "1280" },
         ],

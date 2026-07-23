@@ -38,7 +38,7 @@ const StoriesBar = () => {
         {/* Add Story card */}
         <div
           onClick={() => setShowModel(true)}
-          className="rounded-lg shadow-sm min-w-[7.5rem] max-w-[7.5rem] max-h-40 aspect-[3/4] cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-dashed border-indigo-300 bg-gradient-to-b from-indigo-50 to-white"
+          className="rounded-lg shadow-sm min-w-[7.5rem] max-w-[7.5rem] max-h-40 aspect-[3/4] cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-dashed border-indigo-300 dark:border-indigo-700 bg-gradient-to-b from-indigo-50 to-white dark:from-indigo-950/40 dark:to-slate-900"
         >
           <div className="h-full flex flex-col items-center justify-center p-4">
             <div className="size-10 bg-indigo-500 rounded-full flex items-center justify-center mb-3">

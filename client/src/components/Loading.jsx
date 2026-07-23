@@ -2,8 +2,8 @@ import React from 'react'
 
 const Loading = () => {
   return (
-    <div className='p-6 space-y-6'>
-      {[1,2,3].map((item) => (
+    <div className='min-h-screen p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'>
+      {[1,2,3,4,5].map((item) => (
         <div
           key={item}
           className='bg-white dark:bg-slate-900 rounded-3xl p-5 animate-pulse shadow'
