@@ -44,7 +44,7 @@ const StoriesBar = () => {
             <div className="size-10 bg-indigo-500 rounded-full flex items-center justify-center mb-3">
               <Plus className="size-5 text-white" />
             </div>
-            <p className="text-sm font-medium text-slate-700 text-center">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200 text-center">
               Create Story
             </p>
           </div>
@@ -58,7 +58,7 @@ const StoriesBar = () => {
           >
             <img
               src={story.user.profile_picture}
-              className="aspect-square object-cover absolute size-8 top-3 left-3 z-10 rounded-full ring ring-gray-100 shadow"
+              className="aspect-square object-cover absolute size-8 top-3 left-3 z-10 rounded-full ring ring-gray-100 dark:ring-slate-700 shadow"
               alt=""
             />
             <p className=" absolute top-18 left-3 text-white/60 text-sm truncate max-w-24">

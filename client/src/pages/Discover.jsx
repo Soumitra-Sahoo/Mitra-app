@@ -8,16 +8,16 @@ import { useDispatch } from "react-redux";
 import { fetchUser } from "../store/slices/userSlice.js";
 
 const UserCardSkeleton = () => (
-  <div className="w-full sm:w-[320px] p-5 bg-white/80 border border-white/50 rounded-3xl shadow-lg animate-pulse">
+  <div className="w-full sm:w-[320px] p-5 bg-white/80 dark:bg-slate-900/80 border border-white/50 rounded-3xl shadow-lg animate-pulse">
     <div className="flex flex-col items-center gap-3">
-      <div className="w-20 h-20 rounded-full bg-slate-200" />
-      <div className="w-32 h-4 bg-slate-200 rounded" />
-      <div className="w-24 h-3 bg-slate-100 rounded" />
-      <div className="w-48 h-3 bg-slate-100 rounded" />
+      <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-slate-700" />
+      <div className="w-32 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
+      <div className="w-24 h-3 bg-slate-100 dark:bg-slate-800 rounded" />
+      <div className="w-48 h-3 bg-slate-100 dark:bg-slate-800 rounded" />
     </div>
     <div className="flex gap-2 mt-4">
-      <div className="flex-1 h-10 bg-slate-200 rounded-xl" />
-      <div className="w-14 h-10 bg-slate-100 rounded-xl" />
+      <div className="flex-1 h-10 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+      <div className="w-14 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl" />
     </div>
   </div>
 );
@@ -90,27 +90,27 @@ const Discover = () => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Fixed header */}
-      <div className="p-6 pb-4 bg-gradient-to-b from-slate-50 to-white z-20">
+      <div className="p-6 pb-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-950 z-20 transition-theme">
         <div className="mb-6">
-          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
             <UserPlus className="size-7 shrink-0" />
             <span>Discover People</span>
           </h1>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-slate-400">
             Connect with people and grow your network
           </p>
         </div>
 
         {/* Search bar */}
-        <div className="shadow-md rounded-2xl border border-slate-200/60 bg-white/90 backdrop-blur-md">
+        <div className="shadow-md rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md">
           <div className="p-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 size-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 size-5" />
               <input
                 type="text"
                 onChange={handleInputChange}
                 value={input}
-                className="pl-12 w-full py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+                className="pl-12 w-full py-3 border border-gray-200 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
                 placeholder="Search by name, username, bio or location…"
               />
               {loading && (
@@ -123,10 +123,9 @@ const Discover = () => {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-6 pb-10 space-y-10">
-        {/* ── People You May Know ── */}
         {showMayKnow && (
           <section>
-            <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2 mb-4 sticky top-0 bg-slate-50/90 backdrop-blur-md py-2 z-10">
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md py-2 z-10">
               <Users className="text-indigo-500 size-5" /> People You May Know
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -141,16 +140,16 @@ const Discover = () => {
 
         <section>
           {!input && !loading && users.length > 0 && (
-            <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2 mb-4 sticky top-0 bg-slate-50/90 backdrop-blur-md py-2 z-10">
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md py-2 z-10">
               <Flame className="text-orange-500 fill-orange-500 size-5" />
               Trending Users
-              <span className="ml-auto text-sm font-normal text-slate-400">
+              <span className="ml-auto text-sm font-normal text-slate-400 dark:text-slate-500">
                 {users.length} people
               </span>
             </h2>
           )}
           {input && hasSearched && !loading && (
-            <h2 className="text-xl font-semibold text-slate-800 mb-4">
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-4">
               {users.length > 0
                 ? `${users.length} result${users.length > 1 ? "s" : ""} for "${input}"`
                 : `No results for "${input}"`}
@@ -167,11 +166,11 @@ const Discover = () => {
 
           {!loading && users.length === 0 && hasSearched && input && (
             <div className="flex flex-col items-center justify-center mt-20 text-center">
-              <Search className="size-12 text-slate-200 mb-4" />
-              <h2 className="text-xl font-semibold text-slate-700 mb-1">
+              <Search className="size-12 text-slate-200 dark:text-slate-300 mb-4" />
+              <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-1">
                 No users found
               </h2>
-              <p className="text-slate-400">Try a different name or username</p>
+              <p className="text-slate-400 dark:text-slate-500">Try a different name or username</p>
             </div>
           )}
         </section>

@@ -18,7 +18,7 @@ const ProfileModel = ({ setShowEdit }) => {
     full_name: user.full_name,
     cover_photo: null,
   });
-  
+
   const [profilePreview, setProfilePreview] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
 
@@ -69,8 +69,8 @@ const ProfileModel = ({ setShowEdit }) => {
   return (
     <div className="fixed top-0 bottom-0 left-0 right-0 z-[110] h-screen overflow-y-scroll bg-black/50">
       <div className="max-w-2xl sm:py-6 mx-auto">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-lg shadow p-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-6">
             Edit Profile
           </h1>
 
@@ -88,7 +88,7 @@ const ProfileModel = ({ setShowEdit }) => {
             <div className="flex flex-col items-start gap-3">
               <label
                 htmlFor="profile_picture"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1"
               >
                 Profile Picture
                 <input
@@ -96,7 +96,7 @@ const ProfileModel = ({ setShowEdit }) => {
                   type="file"
                   accept="image/*"
                   id="profile_picture"
-                  className="w-full p-3 border border-gray-200 rounded-lg"
+                  className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg"
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
@@ -122,7 +122,7 @@ const ProfileModel = ({ setShowEdit }) => {
             <div className="flex flex-col items-start gap-3">
               <label
                 htmlFor="cover_photo"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1"
               >
                 Cover Photo
                 <input
@@ -130,7 +130,7 @@ const ProfileModel = ({ setShowEdit }) => {
                   type="file"
                   accept="image/*"
                   id="cover_photo"
-                  className="w-full p-3 border border-gray-200 rounded-lg"
+                  className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg"
                   onChange={(e) =>
                     setEditForm({ ...editForm, cover_photo: e.target.files[0] })
                   }
@@ -150,12 +150,12 @@ const ProfileModel = ({ setShowEdit }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                 Name
               </label>
               <input
                 type="text"
-                className="w-full p-3 border border-gray-200 rounded-lg"
+                className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg"
                 placeholder="Please enter your full name"
                 onChange={(e) =>
                   setEditForm({ ...editForm, full_name: e.target.value })
@@ -165,12 +165,12 @@ const ProfileModel = ({ setShowEdit }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                 Username
               </label>
               <input
                 type="text"
-                className="w-full p-3 border border-gray-200 rounded-lg"
+                className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg"
                 placeholder="Please enter your username"
                 onChange={(e) =>
                   setEditForm({ ...editForm, username: e.target.value })
@@ -180,12 +180,12 @@ const ProfileModel = ({ setShowEdit }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                 Bio
               </label>
               <textarea
                 rows={3}
-                className="w-full p-3 border border-gray-200 rounded-lg"
+                className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg"
                 placeholder="Please enter short bio"
                 onChange={(e) =>
                   setEditForm({ ...editForm, bio: e.target.value })
@@ -195,12 +195,12 @@ const ProfileModel = ({ setShowEdit }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                 Location
               </label>
               <input
                 type="text"
-                className="w-full p-3 border border-gray-200 rounded-lg"
+                className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg"
                 placeholder="Please enter your location"
                 onChange={(e) =>
                   setEditForm({ ...editForm, location: e.target.value })
@@ -213,7 +213,7 @@ const ProfileModel = ({ setShowEdit }) => {
               <button
                 type="button"
                 onClick={() => setShowEdit(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer"
+                className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 transition-colors cursor-pointer"
               >
                 Cancel
               </button>

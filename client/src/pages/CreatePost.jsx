@@ -23,7 +23,7 @@ const CreatePost = () => {
   const user = useSelector((state) => state.user.value);
   const navigate = useNavigate();
   const { getToken } = useAuth();
-  
+
   useEffect(() => {
     const urls = images.map((img) => URL.createObjectURL(img));
     setPreviews(urls);
@@ -127,8 +127,8 @@ const CreatePost = () => {
                             setVisibility(value);
                             setShowVisibilityMenu(false);
                           }}
-                          className={`w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-slate-950 transition ${
-                            visibility === value ? "bg-indigo-50" : ""
+                          className={`w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-slate-800 transition ${
+                            visibility === value ? "bg-indigo-50 dark:bg-indigo-950/40" : ""
                           }`}
                         >
                           <Icon className="size-4 mt-0.5 text-indigo-600 flex-shrink-0" />
@@ -149,7 +149,7 @@ const CreatePost = () => {
           <textarea
             onChange={(e) => setContent(e.target.value)}
             value={content}
-            className="w-full resize-none max-h-20 mt-4 text-sm outline-none placeholder-gray-400 dark:placeholder-slate-500"
+            className="w-full resize-none max-h-20 mt-4 text-sm outline-none bg-transparent placeholder-gray-400 dark:placeholder-slate-500"
             placeholder="What's happening?"
           />
 
