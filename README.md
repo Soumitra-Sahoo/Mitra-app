@@ -1,116 +1,222 @@
-# 🌐 Mitra — Full-Stack Social Media Platform
+🌐 Mitra — Production-Grade Social Networking Platform
 
-Mitra is a production-ready social networking platform built using the MERN stack and modern web technologies. The platform delivers a scalable and responsive social media experience with real-time communication, secure authentication, event-driven workflows, and modern UI architecture.
+Mitra is a production-grade full-stack social networking platform engineered with the MERN stack and modern cloud-native development practices. It provides a scalable architecture for real-time communication, secure authentication, asynchronous event processing, and responsive user experiences.
 
-Designed with production-level engineering practices, Mitra focuses on performance, modular backend design, real-time interactions, and seamless user experience across devices.
+The project is designed to demonstrate production-level backend engineering, clean software architecture, secure API design, and scalable frontend development.
 
-## 🚀 Key Features
+---
 
-### Social Networking
-- Real-time social feed with likes, comments, and interactions
-- Follow/Unfollow system for user connections
-- Dynamic user profiles with image uploads
-- Personalized user experience and activity management
+Overview
 
-### Real-Time Communication
-- Direct messaging system
-- Real-time notifications and updates
-- Live interaction handling using WebSockets / SSE
+Mitra adopts a modular architecture that separates presentation, business logic, and infrastructure concerns, making the application easier to maintain, extend, and scale. The system leverages event-driven workflows for asynchronous processing while using real-time communication channels to deliver an interactive user experience.
 
-### Authentication & Security
-- Secure authentication and user session management with Clerk
-- Webhook-based event synchronization
-- Protected routes and secure API workflows
+---
 
-### Event-Driven Automation
-- Event-driven workflows powered by Inngest
-- Automated notification triggers
-- Background task processing and asynchronous event handling
+Core Capabilities
 
-### User Experience
-- Fully responsive cross-device UI
-- Optimized frontend performance
-- Modern component-based architecture
+Social Graph
 
-## 🛠️ Tech Stack
+- User onboarding and profile management
+- Follow/Unfollow relationship management
+- Personalized feed generation
+- Post creation, editing, and deletion
+- Like and comment system
+- Media upload support
+- Server-side feed pagination
 
-### Frontend
+Real-Time Infrastructure
+
+- Instant messaging
+- Live notification delivery
+- Typing indicators
+- Server-Sent Events (SSE) for real-time synchronization
+- Persistent event streaming for connected clients
+
+Identity & Access Management
+
+- Clerk-based authentication
+- Secure session lifecycle
+- Protected API endpoints
+- Webhook-driven user synchronization
+- Resource-level authorization
+- Authentication-aware SSE connections
+
+Event-Driven Processing
+
+- Background workflows powered by Inngest
+- Asynchronous notification dispatch
+- Event orchestration
+- Workflow retries and failure handling
+- Decoupled business processes
+
+Performance Engineering
+
+- Optimized database access patterns
+- Atomic MongoDB update operations
+- Efficient React rendering
+- Route-level code splitting
+- Lazy component loading
+- Server-side pagination
+- Reduced unnecessary re-renders
+
+User Experience
+
+- Responsive mobile-first interface
+- Modern component-driven UI
+- Optimistic user interactions
+- Consistent application state management
+- Smooth navigation experience
+
+---
+
+Technology Stack
+
+Frontend
+
 - React.js
+- React Router
+- Redux Toolkit
 - Tailwind CSS
+- Axios
 
-### Backend
+Backend
+
 - Node.js
 - Express.js
 
-### Database
+Database
+
 - MongoDB
+- Mongoose ODM
 
-### Authentication & Security
+Authentication
+
 - Clerk Authentication
-- Webhooks
+- Clerk Webhooks
 
-### Real-Time Systems
-- WebSockets / Server-Sent Events (SSE)
+Real-Time Communication
 
-### Event-Driven Architecture
+- Server-Sent Events (SSE)
+
+Workflow Orchestration
+
 - Inngest
 
-### Notifications
-- Email-based notification system
+Notification Services
 
-## 🏗️ Project Architecture
+- Email Notifications
 
-Mitra follows a modular full-stack architecture designed for scalability, maintainability, and production-level development practices.
+Development & Tooling
 
-### Frontend Architecture (`client/`)
-- Component-driven React architecture
-- Feature-based folder organization
-- Reusable UI components
-- Centralized API handling
-- Responsive Tailwind-powered UI system
+- Git
+- GitHub
+- Postman
 
-```bash
+---
+
+Architecture
+
+Mitra follows a layered architecture that promotes loose coupling, separation of concerns, and long-term maintainability.
+
+Frontend
+
 client/
 ├── src/
-│   ├── api/           # API communication layer
-│   ├── app/           # Application configuration
-│   ├── assets/        # Static assets
-│   ├── components/    # Reusable UI components
-│   ├── features/      # Feature-based modules
-│   └── pages/         # Route-level pages
-```
+│   ├── api/
+│   ├── app/
+│   ├── assets/
+│   ├── components/
+│   ├── features/
+│   ├── hooks/
+│   ├── layouts/
+│   ├── pages/
+│   ├── services/
+│   └── utils/
 
-### Backend Architecture (`server/`)
-- RESTful Express.js backend
-- Modular route-controller architecture
-- Middleware-based request handling
-- Event-driven workflows using Inngest
-- Secure authentication integration with Clerk
+Responsibilities
 
-```bash
+- Component-driven UI architecture
+- Feature-based module organization
+- Centralized API abstraction
+- Global state management
+- Route protection
+- Reusable design system
+
+---
+
+Backend
+
 server/
-├── configs/           # Database & service configuration
-├── controllers/       # Business logic
-├── inngest/           # Event-driven workflows
-├── middlewares/       # Custom middleware
-├── models/            # MongoDB models
-├── routes/            # API routes
-```
+├── configs/
+├── controllers/
+├── inngest/
+├── middlewares/
+├── models/
+├── routes/
+├── services/
+├── utils/
+└── validators/
 
-### System Design Highlights
-- Real-time communication support
-- Event-driven background workflows
-- Scalable REST API architecture
+Responsibilities
+
+- RESTful API layer
+- Business logic isolation
+- Authentication middleware
+- Event publishing
+- Background workflow execution
+- Database abstraction
+- Request validation
+- Error handling
+
+---
+
+Engineering Highlights
+
+- Modular full-stack architecture
+- RESTful API design
 - Secure authentication lifecycle
-- Modular and maintainable codebase
-- Responsive cross-device user experience
+- Event-driven system architecture
+- Real-time communication using SSE
+- Stateless backend services
+- Middleware-oriented request pipeline
+- Server-side pagination strategy
+- Atomic database mutations
+- Reusable frontend architecture
+- Responsive cross-platform interface
+- Maintainable and scalable codebase
 
-## 📌 Future Enhancements
+---
 
-- Redis-based caching layer
-- Dockerized deployment
-- Microservices migration
+Scalability Considerations
+
+The architecture has been designed with future horizontal scaling and cloud deployment in mind.
+
+Planned enhancements include:
+
+- Redis distributed caching
+- Docker containerization
+- Kubernetes orchestration
+- GitHub Actions CI/CD pipelines
+- Object storage for media assets
+- Search indexing
 - AI-powered content recommendations
-- Media optimization pipeline
-- Kubernetes deployment support
-- Advanced analytics dashboard
+- Push notification service
+- Advanced analytics platform
+- Distributed microservice architecture
+- Observability (logging, metrics, tracing)
+- Rate limiting and API throttling
+- CDN-backed media delivery
+
+---
+
+Design Principles
+
+- Separation of Concerns
+- Modular Architecture
+- Event-Driven Design
+- Secure-by-Default APIs
+- Reusable Components
+- Scalable Backend Services
+- Maintainable Codebase
+- Performance-Oriented Development
+- Production-Ready Engineering Practices
