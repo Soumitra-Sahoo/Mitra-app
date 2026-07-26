@@ -1,11 +1,7 @@
 import User from "../models/User.js";
 import Message from "../models/Message.js";
 import { pushEvent, connections } from "./messageController.js";
-
-const isConnected = async (myId, otherId) => {
-  const me = await User.findById(myId);
-  return !!me?.connections?.includes(otherId);
-};
+import { isConnected } from "../utils/isConnected.js";
 
 const pushEventWithRetry = async (userId, payload, attempts = 5, delayMs = 400) => {
   for (let i = 0; i < attempts; i++) {
