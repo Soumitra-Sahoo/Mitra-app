@@ -13,6 +13,7 @@ import messageRouter from "./routes/messageRoutes.js";
 import commentRouter from "./routes/commentRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
 import callRouter from "./routes/callRoutes.js";
+import groupRouter from "./routes/groupRoutes.js";
 
 const REQUIRED_ENV_VARS = [
   "MONGODB_URL",
@@ -36,7 +37,6 @@ if (missing.length > 0) {
 }
 
 const app = express();
-
 app.set("trust proxy", 1);
 
 await connectDB();
@@ -69,6 +69,7 @@ app.use("/api/message", messageRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/notification", notificationRouter);
 app.use("/api/call", callRouter);
+app.use("/api/group", groupRouter);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Not found" });
