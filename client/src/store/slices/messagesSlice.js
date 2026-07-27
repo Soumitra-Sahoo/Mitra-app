@@ -7,10 +7,10 @@ const initialState = {
 
 export const fetchMessages = createAsyncThunk(
   "messages/fetchMessages",
-  async ({ token, userId }) => {
+  async ({ token, userId, groupId }) => {
     const { data } = await api.post(
       "/api/message/get",
-      { to_user_id: userId },
+      groupId ? { group_id: groupId } : { to_user_id: userId },
       {
         headers: { Authorization: `Bearer ${token}` },
       },
@@ -43,6 +43,27 @@ const messagesSlice = createSlice({
         return message;
       });
     },
+    updateMessageInStore: (state, action) => {
+      const { messageId, text, edited_at } = action.payload;
+      state.messages = state.messages.map((message) =>
+        message._id === messageId
+          ? { ...message, text, edited: true, edited_at }
+          : message,
+      );
+    },
+    markMessageDeletedInStore: (state, action) => {
+      const { messageId } = action.payload;
+      state.messages = state.messages.map((message) =>
+        message._id === messageId
+          ? { ...message, deleted_for_everyone: true, text: "", media_url: "" }
+          : message,
+      );
+    },
+    removeMessageFromStore: (state, action) => {
+      state.messages = state.messages.filter(
+        (message) => message._id !== action.payload,
+      );
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchMessages.fulfilled, (state, action) => {
@@ -53,7 +74,14 @@ const messagesSlice = createSlice({
   },
 });
 
-export const { setMessages, addMessage, resetMessages, markMessagesSeen } =
-  messagesSlice.actions;
+export const {
+  setMessages,
+  addMessage,
+  resetMessages,
+  markMessagesSeen,
+  updateMessageInStore,
+  markMessageDeletedInStore,
+  removeMessageFromStore,
+} = messagesSlice.actions;
 
 export default messagesSlice.reducer;

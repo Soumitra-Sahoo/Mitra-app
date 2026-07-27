@@ -1,4 +1,10 @@
-import React, {useRef, useEffect, useState, createContext, useContext} from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+} from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Feed from "./pages/Feed";
@@ -19,6 +25,8 @@ import { fetchConnections } from "./store/slices/connectionSlice.js";
 import {
   addMessage,
   markMessagesSeen,
+  updateMessageInStore,
+  markMessageDeletedInStore,
 } from "./store/slices/messagesSlice.js";
 import Notification from "./components/Notification.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
@@ -30,6 +38,7 @@ import { useCall } from "./context/CallContext.jsx";
 export const OnlineContext = createContext({
   onlineUsers: new Set(),
   typingUsers: {},
+  groupEvents: null,
 });
 export const useOnline = () => useContext(OnlineContext);
 
@@ -42,7 +51,8 @@ const App = () => {
   const { handleSignal } = useCall();
 
   const [onlineUsers, setOnlineUsers] = useState(new Set());
-  const [typingUsers, setTypingUsers] = useState({}); 
+  const [typingUsers, setTypingUsers] = useState({});
+  const [groupEventTick, setGroupEventTick] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +74,15 @@ const App = () => {
     let eventSource;
     let cancelled = false;
     let reconnectTimeout;
+
+    const currentGroupId = () => {
+      const match = pathnameRef.current.match(/^\/messages\/group\/([^/]+)/);
+      return match ? match[1] : null;
+    };
+    const currentDmId = () => {
+      const match = pathnameRef.current.match(/^\/messages\/([^/]+)$/);
+      return match ? match[1] : null;
+    };
 
     const handleMessage = (event) => {
       const data = JSON.parse(event.data);
@@ -88,7 +107,8 @@ const App = () => {
       }
 
       if (data.type === "typing") {
-        setTypingUsers((prev) => ({ ...prev, [data.from]: data.isTyping }));
+        const key = data.group_id ? `group:${data.group_id}` : data.from;
+        setTypingUsers((prev) => ({ ...prev, [key]: data.isTyping }));
         return;
       }
 
@@ -97,11 +117,62 @@ const App = () => {
         return;
       }
 
-      // WebRTC call signaling — same SSE stream, just a different event
-      // namespace. handleSignal's identity is stable (see CallContext) so
-      // it's safe to include here without forcing this effect to re-run.
+      if (data.type === "message-edited") {
+        if (
+          (data.group_id && data.group_id === currentGroupId()) ||
+          (!data.group_id && currentDmId())
+        ) {
+          dispatch(
+            updateMessageInStore({
+              messageId: data.messageId,
+              text: data.text,
+              edited_at: data.edited_at,
+            }),
+          );
+        }
+        return;
+      }
+
+      if (data.type === "message-deleted") {
+        if (
+          (data.group_id && data.group_id === currentGroupId()) ||
+          (!data.group_id && currentDmId())
+        ) {
+          dispatch(markMessageDeletedInStore({ messageId: data.messageId }));
+        }
+        return;
+      }
+
+      if (data.type === "group-updated") {
+        setGroupEventTick((t) => t + 1);
+        return;
+      }
+
       if (typeof data.type === "string" && data.type.startsWith("call-")) {
         handleSignal(data);
+        return;
+      }
+
+      if (data.type === "group-message") {
+        setGroupEventTick((t) => t + 1);
+        if (data.group_id === currentGroupId()) {
+          dispatch(addMessage(data));
+        } else {
+          toast.custom(
+            (t) => (
+              <Notification
+                t={t}
+                message={{
+                  from_user_id: data.from_user_id,
+                  text: data.text || "New group message",
+                  _id: data._id,
+                  group_id: data.group_id,
+                }}
+              />
+            ),
+            { position: "bottom-right" },
+          );
+        }
         return;
       }
 
@@ -144,7 +215,7 @@ const App = () => {
   }, [user, dispatch, handleSignal, getToken]);
 
   return (
-    <OnlineContext.Provider value={{ onlineUsers, typingUsers }}>
+    <OnlineContext.Provider value={{ onlineUsers, typingUsers, groupEventTick }}>
       <Toaster />
       {user && <OnboardingModal />}
       <IncomingCallModal />
@@ -157,6 +228,7 @@ const App = () => {
           <Route index element={<Feed />} />
           <Route path="messages" element={<Message />} />
           <Route path="messages/:userId" element={<ChatBox />} />
+          <Route path="messages/group/:groupId" element={<ChatBox />} />
           <Route path="connections" element={<Connections />} />
           <Route path="discover" element={<Discover />} />
           <Route path="profile" element={<Profile />} />
