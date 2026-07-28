@@ -26,16 +26,16 @@ const IncomingCallModal = () => {
 
   return (
     <div className="fixed inset-0 z-[300] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+      <div className="bg-card rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
         <img
           src={remoteUser.profile_picture}
-          className="size-24 rounded-full object-cover mx-auto border-4 border-indigo-100 shadow animate-pulse"
+          className="size-24 rounded-full object-cover mx-auto border-4 border-primary/20 shadow animate-pulse"
           alt=""
         />
-        <p className="mt-4 text-xl font-semibold text-slate-900">
+        <p className="mt-4 text-xl font-semibold text-foreground">
           {remoteUser.full_name}
         </p>
-        <p className="text-slate-500 mt-1 flex items-center justify-center gap-1.5">
+        <p className="text-foreground-secondary mt-1 flex items-center justify-center gap-1.5">
           {callType === "video" ? (
             <Video className="size-4" />
           ) : (
@@ -48,7 +48,7 @@ const IncomingCallModal = () => {
           <button
             onClick={handleDecline}
             disabled={responded}
-            className="size-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+            className="size-14 rounded-full bg-danger hover:brightness-110 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             title="Decline"
           >
             <PhoneOff className="size-6" />
@@ -56,7 +56,7 @@ const IncomingCallModal = () => {
           <button
             onClick={handleAccept}
             disabled={responded}
-            className="size-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+            className="size-14 rounded-full bg-success hover:brightness-110 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             title="Accept"
           >
             <Phone className="size-6" />
