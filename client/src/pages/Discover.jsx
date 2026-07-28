@@ -122,7 +122,7 @@ const Discover = () => {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-10 space-y-10 bg-background">
+      <div className="flex-1 overflow-y-auto px-6 pb-10 space-y-10">
         {showMayKnow && (
           <section>
             <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md py-2 z-10">
