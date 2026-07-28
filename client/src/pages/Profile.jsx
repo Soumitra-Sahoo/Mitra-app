@@ -71,7 +71,7 @@ const Profile = () => {
   if (!user) return <Loading />;
 
   return (
-    <div className="relative h-full overflow-y-scroll bg-gray-50 dark:bg-slate-950 p-6">
+    <div className="relative h-full overflow-y-scroll bg-background dark:bg-slate-950 p-6">
       {lightbox.open && (
         <Lightbox
           images={lightbox.images}
