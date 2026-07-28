@@ -162,7 +162,7 @@ const GroupInfoPanel = ({ groupId, onClose, onUpdated }) => {
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="font-semibold text-foreground">Group info</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition">
+          <button onClick={onClose} className="text-slate-400 hover:text-foreground transition">
             <X className="size-5" />
           </button>
         </div>
@@ -207,7 +207,7 @@ const GroupInfoPanel = ({ groupId, onClose, onUpdated }) => {
         <div className="flex-1 overflow-y-auto p-2">
           <button
             onClick={() => setShowAddPicker((v) => !v)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-primary transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface text-primary transition"
           >
             <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center">
               <UserPlus className="size-4" />
@@ -227,7 +227,7 @@ const GroupInfoPanel = ({ groupId, onClose, onUpdated }) => {
                   key={c._id}
                   onClick={() => handleAddMember(c._id)}
                   disabled={group.members.length >= MAX_GROUP_MEMBERS}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition disabled:opacity-50"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface transition disabled:opacity-50"
                 >
                   <img src={c.profile_picture} className="size-7 rounded-full object-cover" alt="" />
                   <span className="text-sm text-foreground">{c.full_name}</span>
@@ -239,7 +239,7 @@ const GroupInfoPanel = ({ groupId, onClose, onUpdated }) => {
           {group.members.map((m) => (
             <div
               key={m.user_id}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface transition"
             >
               <img src={m.user?.profile_picture} className="size-9 rounded-full object-cover" alt="" />
               <div className="flex-1 min-w-0">
@@ -262,14 +262,14 @@ const GroupInfoPanel = ({ groupId, onClose, onUpdated }) => {
                       handleRoleChange(m.user_id, m.role === "admin" ? "member" : "admin")
                     }
                     title={m.role === "admin" ? "Remove as admin" : "Make admin"}
-                    className="p-1.5 rounded-lg text-muted hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition"
+                    className="p-1.5 rounded-lg text-muted hover:text-warning hover:bg-warning/10 transition"
                   >
                     <Crown className="size-4" />
                   </button>
                   <button
                     onClick={() => handleRemoveMember(m.user_id)}
                     title="Remove from group"
-                    className="p-1.5 rounded-lg text-muted hover:text-rose hover:bg-red-50 dark:hover:bg-red-950/30 transition"
+                    className="p-1.5 rounded-lg text-muted hover:text-rose hover:bg-danger/10 transition"
                   >
                     <UserMinus className="size-4" />
                   </button>
@@ -282,7 +282,7 @@ const GroupInfoPanel = ({ groupId, onClose, onUpdated }) => {
         <div className="p-4 border-t border-border">
           <button
             onClick={handleLeave}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50 text-red-500 font-medium transition"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-danger/10 hover:bg-danger/20 text-danger font-medium transition"
           >
             <LogOut className="size-4" />
             Leave group

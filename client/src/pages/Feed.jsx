@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { assets } from "../assets/assets";
 import StoriesBar from "../components/StoriesBar";
+import CreatePostTrigger from "../components/CreatePostTrigger";
 import PostCard from "../components/PostCard";
 import RecentMessages from "../components/RecentMessages";
 import { useAuth } from "@clerk/clerk-react";
@@ -10,17 +11,17 @@ import { Hash, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PostSkeleton = () => (
-  <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 animate-pulse shadow w-full max-w-3xl">
+  <div className="bg-card rounded-3xl p-5 animate-pulse shadow w-full max-w-3xl">
     <div className="flex gap-3 items-center mb-4">
-      <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+      <div className="w-10 h-10 rounded-full bg-border" />
       <div className="space-y-2">
-        <div className="w-28 h-3 bg-slate-200 dark:bg-slate-700 rounded" />
-        <div className="w-20 h-3 bg-slate-100 dark:bg-slate-800 rounded" />
+        <div className="w-28 h-3 bg-border rounded" />
+        <div className="w-20 h-3 bg-surface rounded" />
       </div>
     </div>
-    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
-    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-4" />
-    <div className="h-52 bg-slate-200 dark:bg-slate-700 rounded-2xl" />
+    <div className="h-3 bg-border rounded mb-2" />
+    <div className="h-3 bg-border rounded w-3/4 mb-4" />
+    <div className="h-52 bg-border rounded-2xl" />
   </div>
 );
 
@@ -101,13 +102,16 @@ const Feed = () => {
     <div className="h-full overflow-y-scroll no-scrollbar py-10 xl:pr-5 flex items-start justify-center xl:gap-8">
       <div className="w-full max-w-3xl">
         <StoriesBar />
+        <div className="px-4 pt-4">
+          <CreatePostTrigger />
+        </div>
         <div className="p-4 space-y-6 flex flex-col items-center">
           {loading ? (
             Array(3)
               .fill(0)
               .map((_, i) => <PostSkeleton key={i} />)
           ) : feeds.length === 0 ? (
-            <div className="text-center mt-16 text-slate-400 dark:text-slate-500">
+            <div className="text-center mt-16 text-muted">
               <p className="text-lg font-medium">Your feed is empty</p>
               <p className="text-sm mt-1">
                 Follow people or connect to see their posts
@@ -122,35 +126,35 @@ const Feed = () => {
           {!loading && hasMore && (
             <div ref={sentinelRef} className="h-10 flex items-center justify-center w-full">
               {loadingMore && (
-                <div className="size-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               )}
             </div>
           )}
           {!loading && !hasMore && feeds.length > 0 && (
-            <p className="text-slate-400 dark:text-slate-500 text-sm py-4">You're all caught up 🎉</p>
+            <p className="text-muted text-sm py-4">You're all caught up 🎉</p>
           )}
         </div>
       </div>
 
       <div className="max-xl:hidden sticky top-0 space-y-4">
-        <div className="max-w-xs bg-white dark:bg-slate-900 text-xs p-4 rounded-2xl inline-flex flex-col gap-2 shadow">
-          <h3 className="text-slate-800 dark:text-slate-100 font-semibold">Sponsored</h3>
+        <div className="max-w-xs bg-card text-xs p-4 rounded-2xl inline-flex flex-col gap-2 shadow">
+          <h3 className="text-foreground font-semibold">Sponsored</h3>
           <img
             src={assets.sponsored_img}
             alt=""
             className="w-75 h-50 rounded-xl"
           />
-          <p className="text-slate-600 dark:text-slate-300 font-medium">Email marketing</p>
-          <p className="text-slate-400 dark:text-slate-500">
+          <p className="text-foreground-secondary font-medium">Email marketing</p>
+          <p className="text-muted">
             Supercharge your marketing with a powerful, easy-to-use platform
             built for results.
           </p>
         </div>
 
         {hashtags.length > 0 && (
-          <div className="max-w-xs bg-white dark:bg-slate-900 text-xs p-4 rounded-2xl shadow">
-            <h3 className="text-slate-800 dark:text-slate-100 font-semibold flex items-center gap-2 mb-3">
-              <TrendingUp className="size-4 text-indigo-500" /> Trending
+          <div className="max-w-xs bg-card text-xs p-4 rounded-2xl shadow">
+            <h3 className="text-foreground font-semibold flex items-center gap-2 mb-3">
+              <TrendingUp className="size-4 text-primary" /> Trending
               Hashtags
             </h3>
             <div className="space-y-2">
@@ -158,13 +162,13 @@ const Feed = () => {
                 <button
                   key={tag}
                   onClick={() => navigate(`/hashtag/${tag}`)}
-                  className="flex items-center justify-between w-full px-3 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition group"
+                  className="flex items-center justify-between w-full px-3 py-1.5 rounded-xl hover:bg-surface transition group"
                 >
-                  <span className="flex items-center gap-1 text-indigo-600 font-medium group-hover:underline">
+                  <span className="flex items-center gap-1 text-primary font-medium group-hover:underline">
                     <Hash className="size-3" />
                     {tag}
                   </span>
-                  <span className="text-slate-400 dark:text-slate-500">{count} posts</span>
+                  <span className="text-muted">{count} posts</span>
                 </button>
               ))}
             </div>

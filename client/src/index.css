@@ -1,8 +1,66 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
-body { font-family: "Inter", sans-serif; }
+:root {
+  --primary: #FF8A3D;
+  --primary-hover: #FF9C52;
+  --primary-active: #FF7A2B;
+  --gradient-start: #FF8A3D;
+  --gradient-end: #FF4D8D;
+  --secondary-accent: #F97316;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --rose: #FF4D8D;
+
+  --background: #FFF9F4;
+  --surface: #FFF4EB;
+  --card: #FFFFFF;
+  --border: #F2E5D7;
+  --navbar: rgba(255,255,255,0.82);
+  --sidebar: #FFFFFF;
+  --foreground: #1B1B1F;
+  --foreground-secondary: #6B7280;
+  --muted: #9CA3AF;
+}
+
+.dark {
+  --background: #0F1115;
+  --surface: #171A22;
+  --card: #1E2430;
+  --border: #2A3342;
+  --navbar: rgba(22,26,34,0.85);
+  --sidebar: #161A22;
+  --foreground: #F7F7F8;
+  --foreground-secondary: #A1A7B3;
+  --muted: #7C8596;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-gradient-start: var(--gradient-start);
+  --color-gradient-end: var(--gradient-end);
+  --color-secondary-accent: var(--secondary-accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-rose: var(--rose);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-navbar: var(--navbar);
+  --color-sidebar: var(--sidebar);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted: var(--muted);
+}
+
+body { font-family: "Inter", sans-serif; background-color: var(--background); color: var(--foreground); }
 h1, h2, h3, .font-heading { font-family: "Sora", sans-serif; }
 
 body, .transition-theme {

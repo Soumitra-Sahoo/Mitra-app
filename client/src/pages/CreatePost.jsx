@@ -24,6 +24,9 @@ const CreatePost = () => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
+  // Object URLs are created once per image list change and revoked when
+  // replaced/unmounted — calling URL.createObjectURL directly in JSX
+  // creates a fresh (unrevoked) blob URL on every render, which leaks.
   useEffect(() => {
     const urls = images.map((img) => URL.createObjectURL(img));
     setPreviews(urls);
@@ -70,18 +73,18 @@ const CreatePost = () => {
 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-950 transition-theme">
+    <div className="min-h-full bg-background transition-theme">
       <div className="max-w-6xl mx-auto p-6">
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Create Post
           </h1>
-          <p className="text-slate-600 dark:text-slate-300">Share your thoughts with the world</p>
+          <p className="text-foreground-secondary">Share your thoughts with the world</p>
         </div>
 
         {/* Form */}
-        <div className="max-w-xl bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-xl shadow-md space-y-4">
+        <div className="max-w-xl bg-card p-4 sm:p-8 rounded-xl shadow-md space-y-4">
           {/* Header */}
           <div className="flex items-center gap-3">
             <img
@@ -90,13 +93,13 @@ const CreatePost = () => {
               alt=""
             />
             <div className="flex-1">
-              <h2 className="font-semibold">{user.full_name}</h2>
-              <p className="text-sm text-gray-500 dark:text-slate-400">@{user.username}</p>
+              <h2 className="font-semibold text-foreground">{user.full_name}</h2>
+              <p className="text-sm text-foreground-secondary">@{user.username}</p>
               <div className="relative inline-block mt-1">
                 <button
                   type="button"
                   onClick={() => setShowVisibilityMenu((v) => !v)}
-                  className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 rounded-full px-2.5 py-1 transition mt-0.5"
+                  className="flex items-center gap-1 text-xs text-foreground-secondary hover:text-foreground bg-surface hover:bg-border rounded-full px-2.5 py-1 transition mt-0.5"
                 >
                   {(() => {
                     const current = VISIBILITY_OPTIONS.find((o) => o.value === visibility);
@@ -118,7 +121,7 @@ const CreatePost = () => {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowVisibilityMenu(false)}
                     />
-                    <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-20 overflow-hidden">
+                    <div className="absolute left-0 top-full mt-1 w-56 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden">
                       {VISIBILITY_OPTIONS.map(({ value, label, description, Icon }) => (
                         <button
                           key={value}
@@ -127,14 +130,14 @@ const CreatePost = () => {
                             setVisibility(value);
                             setShowVisibilityMenu(false);
                           }}
-                          className={`w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-slate-800 transition ${
-                            visibility === value ? "bg-indigo-50 dark:bg-indigo-950/40" : ""
+                          className={`w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-surface transition ${
+                            visibility === value ? "bg-primary/10" : ""
                           }`}
                         >
-                          <Icon className="size-4 mt-0.5 text-indigo-600 flex-shrink-0" />
+                          <Icon className="size-4 mt-0.5 text-primary flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-gray-800 dark:text-slate-100">{label}</p>
-                            <p className="text-xs text-gray-400 dark:text-slate-500">{description}</p>
+                            <p className="text-sm font-medium text-foreground">{label}</p>
+                            <p className="text-xs text-muted">{description}</p>
                           </div>
                         </button>
                       ))}
@@ -149,7 +152,7 @@ const CreatePost = () => {
           <textarea
             onChange={(e) => setContent(e.target.value)}
             value={content}
-            className="w-full resize-none max-h-20 mt-4 text-sm outline-none bg-transparent placeholder-gray-400 dark:placeholder-slate-500"
+            className="w-full resize-none max-h-20 mt-4 text-sm outline-none bg-transparent placeholder-muted"
             placeholder="What's happening?"
           />
 
@@ -177,10 +180,10 @@ const CreatePost = () => {
           )}
 
           {/* Bootom Bar */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-300 dark:border-slate-600">
+          <div className="flex items-center justify-between pt-3 border-t border-border">
             <label
               htmlFor="images"
-              className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition cursor-pointer"
+              className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground transition cursor-pointer"
             >
               <Image className="size-6" />
             </label>
@@ -203,7 +206,7 @@ const CreatePost = () => {
                   error: <p>Post Not Uploaded</p>,
                 })
               }
-              className="text-sm bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer"
+              className="text-sm bg-gradient-to-r from-gradient-start to-gradient-end hover:brightness-110 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer"
             >
               Publish Post
             </button>

@@ -16,27 +16,27 @@ import {
 const typeIcon = (type) => {
   switch (type) {
     case "like":
-      return <Heart className="size-4 text-red-500    fill-red-500" />;
+      return <Heart className="size-4 text-rose fill-rose" />;
     case "comment":
     case "reply":
-      return <MessageCircle className="size-4 text-indigo-500" />;
+      return <MessageCircle className="size-4 text-primary" />;
     case "follow":
-      return <UserPlus className="size-4 text-blue-500" />;
+      return <UserPlus className="size-4 text-primary" />;
     case "connection_request":
-      return <Users className="size-4 text-purple-500" />;
+      return <Users className="size-4 text-secondary-accent" />;
     case "connection_accepted":
-      return <Users className="size-4 text-green-500" />;
+      return <Users className="size-4 text-success" />;
     default:
-      return <Bell className="size-4 text-slate-400 dark:text-slate-500" />;
+      return <Bell className="size-4 text-muted" />;
   }
 };
 
 const NotifSkeleton = () => (
-  <div className="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm animate-pulse">
-    <div className="size-11 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
+  <div className="flex items-center gap-3 p-4 bg-card rounded-2xl shadow-sm animate-pulse">
+    <div className="size-11 rounded-full bg-border flex-shrink-0" />
     <div className="flex-1 space-y-2">
-      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
-      <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-1/3" />
+      <div className="h-3 bg-border rounded w-3/4" />
+      <div className="h-3 bg-surface rounded w-1/3" />
     </div>
   </div>
 );
@@ -110,27 +110,27 @@ const NotificationsPage = () => {
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-full bg-background">
       <div className="max-w-2xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <Bell className="size-7" /> Notifications
               {unread > 0 && (
-                <span className="text-sm font-semibold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                <span className="text-sm font-semibold bg-danger text-white px-2 py-0.5 rounded-full">
                   {unread}
                 </span>
               )}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-foreground-secondary mt-1">
               Stay up to date with your activity
             </p>
           </div>
           {unread > 0 && (
             <button
               onClick={markAllRead}
-              className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition"
+              className="flex items-center gap-2 text-sm text-primary hover:text-primary-active font-medium transition"
             >
               <CheckCheck className="size-4" /> Mark all read
             </button>
@@ -146,9 +146,9 @@ const NotificationsPage = () => {
 
           {!loading && notifications.length === 0 && (
             <div className="text-center py-20">
-              <Bell className="size-12 text-slate-200 dark:text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400 font-medium">No notifications yet</p>
-              <p className="text-slate-400 dark:text-slate-500 text-sm">
+              <Bell className="size-12 text-foreground-secondary mx-auto mb-4" />
+              <p className="text-foreground-secondary font-medium">No notifications yet</p>
+              <p className="text-muted text-sm">
                 When people like, comment or follow you, it'll show up here
               </p>
             </div>
@@ -159,7 +159,7 @@ const NotificationsPage = () => {
               key={notif._id}
               onClick={() => handleClick(notif)}
               className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-md
-                ${notif.read ? "bg-white dark:bg-slate-900" : "bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900"}`}
+                ${notif.read ? "bg-card" : "bg-primary/10 border border-primary/30"}`}
             >
               {/* Avatar */}
               <div className="relative flex-shrink-0">
@@ -168,14 +168,14 @@ const NotificationsPage = () => {
                   className="size-11 rounded-full object-cover"
                   alt=""
                 />
-                <span className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow">
+                <span className="absolute -bottom-1 -right-1 bg-card rounded-full p-0.5 shadow">
                   {typeIcon(notif.type)}
                 </span>
               </div>
 
               {/* Text */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-slate-800 dark:text-slate-100">
+                <p className="text-sm text-foreground">
                   <span className="font-semibold">
                     {notif.sender_id?.full_name}
                   </span>{" "}
@@ -184,11 +184,11 @@ const NotificationsPage = () => {
                     .trim()}
                 </p>
                 {notif.post_id?.content && (
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                  <p className="text-xs text-muted mt-0.5 truncate">
                     "{notif.post_id.content.slice(0, 60)}"
                   </p>
                 )}
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   {moment(notif.createdAt).fromNow()}
                 </p>
               </div>
@@ -204,7 +204,7 @@ const NotificationsPage = () => {
 
               {/* Unread dot */}
               {!notif.read && (
-                <span className="size-2 bg-indigo-500 rounded-full flex-shrink-0 mt-2" />
+                <span className="size-2 bg-primary rounded-full flex-shrink-0 mt-2" />
               )}
             </div>
           ))}

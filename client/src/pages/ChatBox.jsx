@@ -315,7 +315,7 @@ const ChatBox = () => {
         : `@${user.username}`;
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 p-3 md:px-10 xl:pl-42 bg-surface border-b border-border shadow-sm">
         <div
           className={`relative ${isGroup ? "cursor-pointer" : ""}`}
@@ -333,7 +333,7 @@ const ChatBox = () => {
             </div>
           )}
           {isOnline && (
-            <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-white" />
+            <span className="absolute bottom-0 right-0 size-3 bg-success rounded-full border-2 border-white" />
           )}
         </div>
         <div
@@ -347,7 +347,7 @@ const ChatBox = () => {
             ) : isGroup ? (
               headerSubtitle
             ) : isOnline ? (
-              <span className="text-green-500">Online</span>
+              <span className="text-success">Online</span>
             ) : (
               headerSubtitle
             )}
@@ -368,7 +368,7 @@ const ChatBox = () => {
               <button
                 onClick={() => startCall(user, "audio")}
                 disabled={callState !== "idle"}
-                className="size-9 flex items-center justify-center rounded-full bg-card/70 hover:bg-white dark:hover:bg-slate-900 text-primary transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="size-9 flex items-center justify-center rounded-full bg-card/70 hover:bg-card text-primary transition disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Voice call"
               >
                 <Phone className="size-4" />
@@ -376,7 +376,7 @@ const ChatBox = () => {
               <button
                 onClick={() => startCall(user, "video")}
                 disabled={callState !== "idle"}
-                className="size-9 flex items-center justify-center rounded-full bg-card/70 hover:bg-white dark:hover:bg-slate-900 text-primary transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="size-9 flex items-center justify-center rounded-full bg-card/70 hover:bg-card text-primary transition disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Video call"
               >
                 <Video className="size-4" />
@@ -441,7 +441,7 @@ const ChatBox = () => {
                   className={`group flex flex-col ${isMyMessage ? "items-end" : "items-start"}`}
                 >
                   {isGroup && !isMyMessage && senderName && (
-                    <p className="text-xs font-medium text-primary dark:text-primary mb-0.5 ml-1">
+                    <p className="text-xs font-medium text-primary mb-0.5 ml-1">
                       {senderName}
                     </p>
                   )}
@@ -449,7 +449,7 @@ const ChatBox = () => {
                     {isMyMessage && (
                       <button
                         onClick={(e) => openMenu(message, e.clientX, e.clientY)}
-                        className="opacity-0 group-hover:opacity-100 transition text-muted hover:text-slate-700 dark:hover:text-slate-200"
+                        className="opacity-0 group-hover:opacity-100 transition text-muted hover:text-foreground"
                       >
                         <MoreVertical className="size-4" />
                       </button>
@@ -480,7 +480,7 @@ const ChatBox = () => {
                               className={`text-xs mb-1.5 pl-2 border-l-2 rounded-sm py-1 px-1.5 ${
                                 isMyMessage
                                   ? "border-white/40 bg-white/10"
-                                  : "border-primary/50 bg-slate-50 dark:bg-slate-800"
+                                  : "border-primary/50 bg-surface"
                               }`}
                             >
                               <p className="font-medium opacity-80">
@@ -525,7 +525,7 @@ const ChatBox = () => {
                     {!isMyMessage && (
                       <button
                         onClick={(e) => openMenu(message, e.clientX, e.clientY)}
-                        className="opacity-0 group-hover:opacity-100 transition text-muted hover:text-slate-700 dark:hover:text-slate-200"
+                        className="opacity-0 group-hover:opacity-100 transition text-muted hover:text-foreground"
                       >
                         <MoreVertical className="size-4" />
                       </button>
@@ -573,7 +573,7 @@ const ChatBox = () => {
                   setText("");
                 }
               }}
-              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition flex-shrink-0 ml-2"
+              className="text-slate-400 hover:text-foreground transition flex-shrink-0 ml-2"
             >
               <X className="size-4" />
             </button>

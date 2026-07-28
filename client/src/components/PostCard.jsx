@@ -21,13 +21,19 @@ import api from "../api/axios.js";
 import toast from "react-hot-toast";
 import Lightbox from "./Lightbox.jsx";
 
+// Renders post/comment text with #hashtags turned into clickable spans,
+// WITHOUT using dangerouslySetInnerHTML. Post content is arbitrary user
+// input — injecting it as raw HTML would let anyone run a stored XSS
+// payload against every viewer of the feed. Splitting on the hashtag
+// regex and mapping to real React elements keeps everything else as
+// plain escaped text automatically.
 const renderContentWithHashtags = (text, navigate) => {
   if (!text) return null;
   return text.split(/(#\w+)/g).map((part, i) =>
     /^#\w+$/.test(part) ? (
       <span
         key={i}
-        className="text-indigo-600 cursor-pointer hover:underline"
+        className="text-primary cursor-pointer hover:underline"
         onClick={() => navigate(`/hashtag/${part.slice(1)}`)}
       >
         {part}
@@ -38,6 +44,10 @@ const renderContentWithHashtags = (text, navigate) => {
   );
 };
 
+// Small icon shown next to a post's timestamp when it isn't public — mainly
+// useful to the owner as a reminder of what audience they picked, since
+// anyone else viewing it already implicitly qualifies (public, or a
+// follower, or the owner themself).
 const VisibilityIcon = ({ visibility }) => {
   if (!visibility || visibility === "public") return null;
   const Icon = visibility === "private" ? Lock : Users;
@@ -45,7 +55,7 @@ const VisibilityIcon = ({ visibility }) => {
   return (
     <span
       title={label}
-      className="inline-flex items-center gap-0.5 text-slate-400 dark:text-slate-500"
+      className="inline-flex items-center gap-0.5 text-muted"
     >
       <Icon className="size-3" />
     </span>
@@ -118,29 +128,29 @@ const CommentItem = ({
         alt=""
       />
       <div className="flex-1">
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-3 py-2">
-          <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+        <div className="bg-surface rounded-2xl px-3 py-2">
+          <p className="text-xs font-semibold text-foreground">
             {comment.user_id?.full_name}
           </p>
-          <p className="text-sm text-slate-700 dark:text-slate-200 mt-0.5">
+          <p className="text-sm text-foreground mt-0.5">
             {renderContentWithHashtags(comment.text, navigate)}
           </p>
         </div>
-        <div className="flex items-center gap-3 mt-1 px-1 text-xs text-slate-400 dark:text-slate-500">
+        <div className="flex items-center gap-3 mt-1 px-1 text-xs text-muted">
           <span>{moment(comment.createdAt).fromNow()}</span>
           <button
             onClick={handleLikeComment}
-            className={`flex items-center gap-1 hover:text-red-500 transition ${liked ? "text-red-500" : ""}`}
+            className={`flex items-center gap-1 hover:text-danger transition ${liked ? "text-danger" : ""}`}
           >
             <Heart
-              className={`size-3 ${liked ? "fill-red-500 text-red-500" : ""}`}
+              className={`size-3 ${liked ? "fill-rose text-rose" : ""}`}
             />
             {likesCount > 0 && <span>{likesCount}</span>}
           </button>
           {depth === 0 && (
             <button
               onClick={() => setShowReplyBox((v) => !v)}
-              className="hover:text-indigo-600 transition"
+              className="hover:text-primary transition"
             >
               Reply
             </button>
@@ -148,7 +158,7 @@ const CommentItem = ({
           {comment.user_id?._id === currentUser?._id && (
             <button
               onClick={() => onDelete(comment._id)}
-              className="hover:text-red-500 transition"
+              className="hover:text-danger transition"
             >
               <Trash2 className="size-3" />
             </button>
@@ -164,11 +174,11 @@ const CommentItem = ({
               onChange={(e) => setReplyText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleReply()}
               placeholder="Write a reply..."
-              className="flex-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-400"
+              className="flex-1 text-xs border border-border bg-card text-foreground rounded-full px-3 py-1.5 outline-none focus:ring-1 focus:ring-primary"
             />
             <button
               onClick={handleReply}
-              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
+              className="text-primary hover:text-primary-active"
             >
               <Send className="size-4" />
             </button>
@@ -179,7 +189,7 @@ const CommentItem = ({
         {comment.replies?.length > 0 && (
           <button
             onClick={() => setShowReplies((v) => !v)}
-            className="text-xs text-indigo-600 mt-1 flex items-center gap-1 hover:underline"
+            className="text-xs text-primary mt-1 flex items-center gap-1 hover:underline"
           >
             {showReplies ? (
               <ChevronUp className="size-3" />
@@ -207,6 +217,10 @@ const CommentItem = ({
   );
 };
 
+// ── Post Detail Modal ──────────────────────────────────────────────────────
+// likes/commentCount/onLikeChange/onCommentCountChange are passed down from
+// PostCard so both views share one source of truth instead of drifting out
+// of sync when a like/comment happens inside the modal.
 const PostModal = ({
   post,
   onClose,
@@ -242,6 +256,7 @@ const PostModal = ({
     return () => {
       document.body.style.overflow = "";
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddComment = async () => {
@@ -309,7 +324,7 @@ const PostModal = ({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden"
+        className="bg-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left: Images */}
@@ -328,7 +343,7 @@ const PostModal = ({
           className={`flex flex-col flex-1 ${post.image_urls?.length > 0 ? "md:w-1/2" : "w-full"}`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between p-4 border-b border-border">
             <div
               onClick={() => {
                 navigate(`/profile/${post.user._id}`);
@@ -343,14 +358,14 @@ const PostModal = ({
               />
               <div>
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold text-sm">
+                  <span className="font-semibold text-sm text-foreground">
                     {post.user.full_name}
                   </span>
                   {post.user.verified && (
-                    <BadgeCheck className="size-4 text-blue-500" />
+                    <BadgeCheck className="size-4 text-primary" />
                   )}
                 </div>
-                <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1">
+                <p className="text-xs text-muted flex items-center gap-1">
                   @{post.user.username} · {moment(post.createdAt).fromNow()}
                   <VisibilityIcon visibility={post.visibility} />
                 </p>
@@ -358,7 +373,7 @@ const PostModal = ({
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 transition"
+              className="text-muted hover:text-foreground transition"
             >
               <X className="size-5" />
             </button>
@@ -366,8 +381,8 @@ const PostModal = ({
 
           {/* Content */}
           {post.content && (
-            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-              <p className="text-sm text-gray-800 dark:text-slate-100 whitespace-pre-line">
+            <div className="px-4 py-3 border-b border-border">
+              <p className="text-sm text-foreground whitespace-pre-line">
                 {renderContentWithHashtags(post.content, navigate)}
               </p>
             </div>
@@ -376,12 +391,12 @@ const PostModal = ({
           {/* Comments list */}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1">
             {loading && (
-              <p className="text-center text-sm text-slate-400 dark:text-slate-500 mt-4">
+              <p className="text-center text-sm text-muted mt-4">
                 Loading comments...
               </p>
             )}
             {!loading && comments.length === 0 && (
-              <p className="text-center text-sm text-slate-400 dark:text-slate-500 mt-8">
+              <p className="text-center text-sm text-muted mt-8">
                 No comments yet. Be the first!
               </p>
             )}
@@ -398,14 +413,14 @@ const PostModal = ({
           </div>
 
           {/* Actions */}
-          <div className="border-t border-slate-100 dark:border-slate-800 p-4">
-            <div className="flex items-center gap-4 mb-3 text-sm text-gray-600 dark:text-slate-300">
+          <div className="border-t border-border p-4">
+            <div className="flex items-center gap-4 mb-3 text-sm text-foreground-secondary">
               <button
                 onClick={handleLike}
-                className="flex items-center gap-1 hover:text-red-500 transition"
+                className="flex items-center gap-1 hover:text-danger transition"
               >
                 <Heart
-                  className={`size-5 ${likes.includes(currentUser?._id) ? "text-red-500 fill-red-500" : ""}`}
+                  className={`size-5 ${likes.includes(currentUser?._id) ? "text-rose fill-rose" : ""}`}
                 />
                 <span>{likes.length}</span>
               </button>
@@ -421,18 +436,18 @@ const PostModal = ({
                 className="size-8 rounded-full object-cover"
                 alt=""
               />
-              <div className="flex-1 flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-full overflow-hidden px-3">
+              <div className="flex-1 flex items-center border border-border bg-card rounded-full overflow-hidden px-3">
                 <input
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                   placeholder="Add a comment..."
-                  className="flex-1 py-2 text-sm outline-none bg-transparent text-slate-800 dark:text-slate-100"
+                  className="flex-1 py-2 text-sm outline-none bg-transparent text-foreground"
                 />
                 <button
                   onClick={handleAddComment}
-                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition pl-2"
+                  className="text-primary hover:text-primary-active transition pl-2"
                 >
                   <Send className="size-4" />
                 </button>
@@ -466,6 +481,7 @@ const PostCard = ({ post, onDelete }) => {
       } catch (_) {}
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post._id]);
 
   const handleLike = async () => {
@@ -500,6 +516,8 @@ const PostCard = ({ post, onDelete }) => {
         toast.success("Link copied to clipboard!");
       }
     } catch (error) {
+      // AbortError just means the user closed the native share sheet —
+      // that's a normal cancellation, not a failure worth surfacing.
       if (error.name !== "AbortError") {
         toast.error("Couldn't share this post");
       }
@@ -548,7 +566,7 @@ const PostCard = ({ post, onDelete }) => {
         />
       )}
 
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
+      <div className="bg-card/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
         {/* User Info */}
         <div
           onClick={() => navigate(`/profile/${post.user._id}`)}
@@ -561,14 +579,14 @@ const PostCard = ({ post, onDelete }) => {
           />
           <div>
             <div className="flex items-center space-x-1">
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
+              <span className="font-semibold text-foreground">
                 {post.user.full_name}
               </span>
               {post.user.verified && (
-                <BadgeCheck className="size-4 text-blue-500" />
+                <BadgeCheck className="size-4 text-primary" />
               )}
             </div>
-            <div className="text-gray-500 dark:text-slate-400 text-sm flex items-center gap-1">
+            <div className="text-foreground-secondary text-sm flex items-center gap-1">
               @{post.user.username} • {moment(post.createdAt).fromNow()}
               <VisibilityIcon visibility={post.visibility} />
             </div>
@@ -577,7 +595,7 @@ const PostCard = ({ post, onDelete }) => {
 
         {/* Content */}
         {post.content && (
-          <div className="text-gray-800 dark:text-slate-100 text-sm whitespace-pre-line">
+          <div className="text-foreground text-sm whitespace-pre-line">
             {renderContentWithHashtags(post.content, navigate)}
           </div>
         )}
@@ -590,7 +608,7 @@ const PostCard = ({ post, onDelete }) => {
                 key={index}
                 src={img}
                 onClick={() => setLightbox({ open: true, index })}
-                className={`w-full bg-slate-100 dark:bg-slate-800 rounded-xl cursor-pointer hover:opacity-95 transition
+                className={`w-full bg-surface rounded-xl cursor-pointer hover:opacity-95 transition
                   ${post.image_urls.length === 1 ? "col-span-2 max-h-[500px] object-contain" : "h-64 object-cover"}`}
                 alt=""
               />
@@ -599,20 +617,20 @@ const PostCard = ({ post, onDelete }) => {
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-4 text-gray-600 dark:text-slate-300 text-sm pt-2 border-t border-gray-200 dark:border-slate-700">
+        <div className="flex items-center gap-4 text-foreground-secondary text-sm pt-2 border-t border-border">
           <button
             onClick={handleLike}
-            className="flex items-center gap-1 hover:text-red-500 transition"
+            className="flex items-center gap-1 hover:text-danger transition"
           >
             <Heart
-              className={`size-4 ${likes.includes(currentUser?._id) ? "text-red-500 fill-red-500" : ""}`}
+              className={`size-4 ${likes.includes(currentUser?._id) ? "text-rose fill-rose" : ""}`}
             />
             <span>{likes.length}</span>
           </button>
 
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 hover:text-indigo-600 transition"
+            className="flex items-center gap-1 hover:text-primary transition"
           >
             <MessageCircle className="size-4" />
             <span>{commentCount}</span>
@@ -620,7 +638,7 @@ const PostCard = ({ post, onDelete }) => {
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-1 hover:text-green-600 transition"
+            className="flex items-center gap-1 hover:text-foreground transition"
           >
             <Share2 className="size-4" />
           </button>
@@ -628,7 +646,7 @@ const PostCard = ({ post, onDelete }) => {
           {isOwner && (
             <button
               onClick={handleDeletePost}
-              className="ml-auto flex items-center gap-1 hover:text-red-500 transition"
+              className="ml-auto flex items-center gap-1 hover:text-danger transition"
               title="Delete post"
             >
               <Trash2 className="size-4" />
