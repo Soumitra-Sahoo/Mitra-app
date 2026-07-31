@@ -24,12 +24,6 @@ import toast from "react-hot-toast";
 import Lightbox from "./Lightbox.jsx";
 import { setBookmarked } from "../store/slices/bookmarksSlice.js";
 
-// Renders post/comment text with #hashtags turned into clickable spans,
-// WITHOUT using dangerouslySetInnerHTML. Post content is arbitrary user
-// input — injecting it as raw HTML would let anyone run a stored XSS
-// payload against every viewer of the feed. Splitting on the hashtag
-// regex and mapping to real React elements keeps everything else as
-// plain escaped text automatically.
 const renderContentWithHashtags = (text, navigate) => {
   if (!text) return null;
   return text.split(/(#\w+)/g).map((part, i) =>
@@ -47,10 +41,6 @@ const renderContentWithHashtags = (text, navigate) => {
   );
 };
 
-// Small icon shown next to a post's timestamp when it isn't public — mainly
-// useful to the owner as a reminder of what audience they picked, since
-// anyone else viewing it already implicitly qualifies (public, or a
-// follower, or the owner themself).
 const VisibilityIcon = ({ visibility }) => {
   if (!visibility || visibility === "public") return null;
   const Icon = visibility === "private" ? Lock : Users;
@@ -258,10 +248,6 @@ const CommentItem = ({
   );
 };
 
-// ── Post Detail Modal ──────────────────────────────────────────────────────
-// likes/commentCount/onLikeChange/onCommentCountChange are passed down from
-// PostCard so both views share one source of truth instead of drifting out
-// of sync when a like/comment happens inside the modal.
 const PostModal = ({
   post,
   onClose,

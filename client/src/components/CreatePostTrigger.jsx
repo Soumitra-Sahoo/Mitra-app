@@ -1,47 +1,35 @@
 import React from "react";
-import { Image, PenSquare } from "lucide-react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Image } from "lucide-react";
 
 const CreatePostTrigger = () => {
-  const navigate = useNavigate();
   const user = useSelector((state) => state.user.value);
+  const navigate = useNavigate();
 
   return (
-    <div className="bg-card rounded-3xl border border-border shadow-sm p-4 transition hover:shadow-md">
-      <div className="flex items-center gap-3">
+    <div className="w-full bg-card border border-border rounded-2xl shadow-sm p-4">
+      <div
+        onClick={() => navigate("/create-post")}
+        className="flex items-center gap-3 cursor-pointer"
+      >
         <img
           src={user?.profile_picture}
-          alt={user?.full_name}
-          className="size-11 rounded-full object-cover"
+          className="size-10 rounded-full object-cover flex-shrink-0"
+          alt=""
         />
-
-        <button
-          onClick={() => navigate("/create-post")}
-          className="flex-1 h-11 rounded-full bg-surface text-left px-4
-                     text-muted hover:bg-border transition"
-        >
+        <div className="flex-1 px-4 py-2.5 rounded-full bg-surface text-foreground-secondary text-sm hover:bg-border/60 transition">
           What's on your mind, {user?.full_name?.split(" ")[0]}?
-        </button>
+        </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-border flex items-center justify-evenly">
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
         <button
           onClick={() => navigate("/create-post")}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl
-                     hover:bg-surface transition text-foreground-secondary"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-surface transition text-sm text-foreground-secondary"
         >
-          <Image className="size-5 text-green-500" />
-          <span className="text-sm font-medium">Photo</span>
-        </button>
-
-        <button
-          onClick={() => navigate("/create-post")}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl
-                     hover:bg-surface transition text-foreground-secondary"
-        >
-          <PenSquare className="size-5 text-blue-500" />
-          <span className="text-sm font-medium">Write</span>
+          <Image className="size-4 text-success" />
+          Photo / Video
         </button>
       </div>
     </div>
