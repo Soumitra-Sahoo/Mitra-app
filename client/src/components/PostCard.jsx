@@ -11,22 +11,19 @@ import {
   Globe,
   Users,
   Lock,
+  MoreVertical,
+  Bookmark,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
 import Lightbox from "./Lightbox.jsx";
+import { setBookmarked } from "../store/slices/bookmarksSlice.js";
 
-// Renders post/comment text with #hashtags turned into clickable spans,
-// WITHOUT using dangerouslySetInnerHTML. Post content is arbitrary user
-// input — injecting it as raw HTML would let anyone run a stored XSS
-// payload against every viewer of the feed. Splitting on the hashtag
-// regex and mapping to real React elements keeps everything else as
-// plain escaped text automatically.
 const renderContentWithHashtags = (text, navigate) => {
   if (!text) return null;
   return text.split(/(#\w+)/g).map((part, i) =>
@@ -44,10 +41,6 @@ const renderContentWithHashtags = (text, navigate) => {
   );
 };
 
-// Small icon shown next to a post's timestamp when it isn't public — mainly
-// useful to the owner as a reminder of what audience they picked, since
-// anyone else viewing it already implicitly qualifies (public, or a
-// follower, or the owner themself).
 const VisibilityIcon = ({ visibility }) => {
   if (!visibility || visibility === "public") return null;
   const Icon = visibility === "private" ? Lock : Users;
@@ -59,6 +52,44 @@ const VisibilityIcon = ({ visibility }) => {
     >
       <Icon className="size-3" />
     </span>
+  );
+};
+
+const PostMenu = ({ isOwner, onDelete }) => {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = () => setOpen(false);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [open]);
+
+  if (!isOwner) return null;
+
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="p-1.5 rounded-full text-muted hover:text-foreground hover:bg-surface transition"
+      >
+        <MoreVertical className="size-4" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-40 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-20">
+          <button
+            onClick={() => {
+              setOpen(false);
+              onDelete();
+            }}
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-danger hover:bg-danger/10 transition"
+          >
+            <Trash2 className="size-4" />
+            Delete post
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -217,10 +248,6 @@ const CommentItem = ({
   );
 };
 
-// ── Post Detail Modal ──────────────────────────────────────────────────────
-// likes/commentCount/onLikeChange/onCommentCountChange are passed down from
-// PostCard so both views share one source of truth instead of drifting out
-// of sync when a like/comment happens inside the modal.
 const PostModal = ({
   post,
   onClose,
@@ -230,6 +257,10 @@ const PostModal = ({
   onLikeChange,
   commentCount,
   onCommentCountChange,
+  isOwner,
+  onDeletePost,
+  isBookmarked,
+  onToggleBookmark,
 }) => {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
@@ -371,12 +402,15 @@ const PostModal = ({
                 </p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="text-muted hover:text-foreground transition"
-            >
-              <X className="size-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <PostMenu isOwner={isOwner} onDelete={onDeletePost} />
+              <button
+                onClick={onClose}
+                className="text-muted hover:text-foreground transition"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
           </div>
 
           {/* Content */}
@@ -428,6 +462,14 @@ const PostModal = ({
                 <MessageCircle className="size-5" />
                 <span>{commentCount}</span>
               </div>
+              <button
+                onClick={onToggleBookmark}
+                className="flex items-center gap-1 ml-auto hover:text-primary transition"
+              >
+                <Bookmark
+                  className={`size-5 ${isBookmarked ? "text-primary fill-primary" : ""}`}
+                />
+              </button>
             </div>
             {/* Add comment */}
             <div className="flex items-center gap-2">
@@ -467,7 +509,11 @@ const PostCard = ({ post, onDelete }) => {
   const [lightbox, setLightbox] = useState({ open: false, index: 0 });
 
   const currentUser = useSelector((state) => state.user.value);
+  const isBookmarked = useSelector((state) =>
+    state.bookmarks.bookmarkedIds.includes(post._id),
+  );
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { getToken } = useAuth();
 
   useEffect(() => {
@@ -526,6 +572,24 @@ const PostCard = ({ post, onDelete }) => {
 
   const isOwner = post.user._id === currentUser?._id;
 
+  const handleToggleBookmark = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/bookmark/toggle",
+        { postId: post._id },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (data.success) {
+        dispatch(setBookmarked({ postId: post._id, bookmarked: data.bookmarked }));
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const handleDeletePost = async () => {
     if (!window.confirm("Delete this post? This can't be undone.")) return;
     try {
@@ -535,6 +599,7 @@ const PostCard = ({ post, onDelete }) => {
       });
       if (data.success) {
         toast.success("Post deleted");
+        setShowModal(false);
         onDelete?.(post._id);
       } else {
         toast.error(data.message);
@@ -563,34 +628,41 @@ const PostCard = ({ post, onDelete }) => {
           onLikeChange={setLikes}
           commentCount={commentCount}
           onCommentCountChange={setCommentCount}
+          isOwner={isOwner}
+          onDeletePost={handleDeletePost}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={handleToggleBookmark}
         />
       )}
 
-      <div className="bg-card/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
+      <div className="bg-card/80 backdrop-blur-lg rounded-3xl shadow-lg border border-border p-5 space-y-4 w-full max-w-3xl hover:shadow-2xl transition-all duration-300">
         {/* User Info */}
-        <div
-          onClick={() => navigate(`/profile/${post.user._id}`)}
-          className="inline-flex items-center gap-3 cursor-pointer"
-        >
-          <img
-            src={post.user.profile_picture}
-            alt=""
-            className="aspect-square object-cover w-10 h-10 rounded-full shadow"
-          />
-          <div>
-            <div className="flex items-center space-x-1">
-              <span className="font-semibold text-foreground">
-                {post.user.full_name}
-              </span>
-              {post.user.verified && (
-                <BadgeCheck className="size-4 text-primary" />
-              )}
-            </div>
-            <div className="text-foreground-secondary text-sm flex items-center gap-1">
-              @{post.user.username} • {moment(post.createdAt).fromNow()}
-              <VisibilityIcon visibility={post.visibility} />
+        <div className="flex items-center justify-between">
+          <div
+            onClick={() => navigate(`/profile/${post.user._id}`)}
+            className="inline-flex items-center gap-3 cursor-pointer"
+          >
+            <img
+              src={post.user.profile_picture}
+              alt=""
+              className="aspect-square object-cover w-10 h-10 rounded-full shadow"
+            />
+            <div>
+              <div className="flex items-center space-x-1">
+                <span className="font-semibold text-foreground">
+                  {post.user.full_name}
+                </span>
+                {post.user.verified && (
+                  <BadgeCheck className="size-4 text-primary" />
+                )}
+              </div>
+              <div className="text-foreground-secondary text-sm flex items-center gap-1">
+                @{post.user.username} • {moment(post.createdAt).fromNow()}
+                <VisibilityIcon visibility={post.visibility} />
+              </div>
             </div>
           </div>
+          <PostMenu isOwner={isOwner} onDelete={handleDeletePost} />
         </div>
 
         {/* Content */}
@@ -617,41 +689,40 @@ const PostCard = ({ post, onDelete }) => {
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-4 text-foreground-secondary text-sm pt-2 border-t border-border">
+        <div className="flex items-center gap-6 text-foreground-secondary text-sm pt-3 border-t border-border">
           <button
             onClick={handleLike}
-            className="flex items-center gap-1 hover:text-danger transition"
+            className="flex items-center gap-2 hover:text-danger transition"
           >
             <Heart
-              className={`size-4 ${likes.includes(currentUser?._id) ? "text-rose fill-rose" : ""}`}
+              className={`size-5 ${likes.includes(currentUser?._id) ? "text-rose fill-rose" : ""}`}
             />
             <span>{likes.length}</span>
           </button>
 
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 hover:text-primary transition"
+            className="flex items-center gap-2 hover:text-primary transition"
           >
-            <MessageCircle className="size-4" />
+            <MessageCircle className="size-5" />
             <span>{commentCount}</span>
           </button>
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-1 hover:text-foreground transition"
+            className="flex items-center gap-2 hover:text-foreground transition"
           >
-            <Share2 className="size-4" />
+            <Share2 className="size-5" />
           </button>
 
-          {isOwner && (
-            <button
-              onClick={handleDeletePost}
-              className="ml-auto flex items-center gap-1 hover:text-danger transition"
-              title="Delete post"
-            >
-              <Trash2 className="size-4" />
-            </button>
-          )}
+          <button
+            onClick={handleToggleBookmark}
+            className="flex items-center gap-2 ml-auto hover:text-primary transition"
+          >
+            <Bookmark
+              className={`size-5 ${isBookmarked ? "text-primary fill-primary" : ""}`}
+            />
+          </button>
         </div>
       </div>
     </>

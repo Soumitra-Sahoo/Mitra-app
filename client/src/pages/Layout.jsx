@@ -1,34 +1,79 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import CommandPalette from "../components/CommandPalette.jsx";
+import BottomNav from "../components/BottomNav.jsx";
+import FloatingCreateButton from "../components/FloatingCreateButton.jsx";
 import { Outlet } from "react-router-dom";
-import { Menu, X } from "lucide-react";
 import Loading from "../components/Loading";
 import { useSelector } from "react-redux";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios.js";
 
 const Layout = () => {
   const user = useSelector((state) => state.user.value);
+  const { getToken } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  return user ? (
-    <div className="w-full flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-theme">
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 overflow-y-auto backdrop-blur-sm">
-        <Outlet />
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchCounts = async () => {
+      try {
+        const token = await getToken();
+        const headers = { Authorization: `Bearer ${token}` };
+        const [notifRes, msgRes] = await Promise.all([
+          api.get("/api/notification/unread", { headers }),
+          api.get("/api/message/unread/count", { headers }),
+        ]);
+        if (notifRes.data.success) setNotificationCount(notifRes.data.count);
+        if (msgRes.data.success) setMessageCount(msgRes.data.count);
+      } catch (_) {}
+    };
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  if (!user) return <Loading />;
+
+  return (
+    <div className="h-screen flex flex-col bg-background transition-theme">
+      <Header
+        notificationCount={notificationCount}
+        messageCount={messageCount}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        onOpenSearch={() => setSearchOpen(true)}
+      />
+      <CommandPalette isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <div className="flex-1 flex overflow-hidden">
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          notificationCount={notificationCount}
+          setNotificationCount={setNotificationCount}
+        />
+        <div className="flex-1 overflow-y-auto pb-16 sm:pb-0">
+          <Outlet />
+        </div>
       </div>
-      {sidebarOpen ? (
-        <X
-          className="absolute top-3 right-3 p-2 z-100 bg-white dark:bg-slate-900 rounded-md shadow w-10 h-10 text-gray-600 dark:text-slate-300 sm:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      ) : (
-        <Menu
-          className="absolute top-3 right-3 p-2 z-100 bg-white dark:bg-slate-900 rounded-md shadow w-10 h-10 text-gray-600 dark:text-slate-300 sm:hidden"
-          onClick={() => setSidebarOpen(true)}
-        />
-      )}
+      <BottomNav notificationCount={notificationCount} messageCount={messageCount} />
+      <FloatingCreateButton />
     </div>
-  ) : (
-    <Loading />
   );
 };
 

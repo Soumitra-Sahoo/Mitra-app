@@ -4,11 +4,13 @@ import moment from "moment";
 import StoryModel from "./StoryModel";
 import StoryViewer from "./StoryViewer";
 import { useAuth } from "@clerk/clerk-react";
+import { useSelector } from "react-redux";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
 
 const StoriesBar = () => {
   const { getToken } = useAuth();
+  const currentUser = useSelector((state) => state.user.value);
   const [stories, setStories] = useState([]);
   const [showModel, setShowModel] = useState(false);
   const [viewStory, setViewStory] = useState(false);
@@ -32,59 +34,68 @@ const StoriesBar = () => {
     fetchStories();
   }, []);
 
+  const latestPerUser = Object.values(
+    stories.reduce((acc, story) => {
+      const id = story.user._id;
+      if (!acc[id] || new Date(story.createdAt) > new Date(acc[id].createdAt)) {
+        acc[id] = story;
+      }
+      return acc;
+    }, {}),
+  ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const myLatestStory = latestPerUser.find((s) => s.user._id === currentUser?._id);
+
   return (
     <div className="w-screen sm:w-[calc(100vw-240px)] lg:max-w-2xl no-scrollbar overflow-x-auto px-4">
-      <div className="flex gap-4 pb-5">
-        {/* Add Story card */}
+      <div className="flex gap-5 pb-5">
         <div
           onClick={() => setShowModel(true)}
-          className="rounded-lg shadow-sm min-w-[7.5rem] max-w-[7.5rem] max-h-40 aspect-[3/4] cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-dashed border-indigo-300 bg-gradient-to-b from-indigo-50 to-white"
+          className="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0"
         >
-          <div className="h-full flex flex-col items-center justify-center p-4">
-            <div className="size-10 bg-indigo-500 rounded-full flex items-center justify-center mb-3">
-              <Plus className="size-5 text-white" />
-            </div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-200 text-center">
-              Create Story
-            </p>
-          </div>
-        </div>
-        {/* Story Cards */}
-        {stories.map((story, index) => (
-          <div
-            key={index}
-            onClick={() => setViewStory(story)}
-            className={`relative rounded-lg shadow min-w-[7.5rem] max-w-[7.5rem] cursor-pointer hover:shadow-lg transition-all duration-200 bg-gradient-to-b from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95`}
-          >
-            <img
-              src={story.user.profile_picture}
-              className="aspect-square object-cover absolute size-8 top-3 left-3 z-10 rounded-full ring ring-gray-100 dark:ring-slate-700 shadow"
-              alt=""
-            />
-            <p className=" absolute top-18 left-3 text-white/60 text-sm truncate max-w-24">
-              {story.content}
-            </p>
-            <p className="text-white absolute bottom-1 right-2 z-10 text-xs">
-              {moment(story.createdAt).fromNow()}
-            </p>
-            {story.media_type !== "text" && (
-              <div className=" absolute inset-0 z-1 rounded-lg bg-black overflow-hidden">
-                {story.media_type === "image" ? (
-                  <img
-                    src={story.media_url}
-                    className="h-full w-full object-cover hover:scale-110 transition duration-500 opacity-70 hover:opacity-80"
-                    alt=""
-                  />
-                ) : (
-                  <video
-                    src={story.media_url}
-                    className="h-full w-full object-cover hover:scale-110 transition duration-500 opacity-70 hover:opacity-80"
-                  />
-                )}
+          <div className="relative size-16">
+            {myLatestStory ? (
+              <div className="size-16 rounded-full p-[2.5px] bg-gradient-to-br from-gradient-start to-gradient-end">
+                <img
+                  src={currentUser?.profile_picture}
+                  className="size-full rounded-full object-cover border-2 border-card"
+                  alt=""
+                />
               </div>
+            ) : (
+              <img
+                src={currentUser?.profile_picture}
+                className="size-16 rounded-full object-cover border-2 border-border"
+                alt=""
+              />
             )}
+            <div className="absolute -bottom-0.5 -right-0.5 size-5 rounded-full bg-primary border-2 border-card flex items-center justify-center">
+              <Plus className="size-3 text-white" />
+            </div>
           </div>
-        ))}
+          <p className="text-xs font-medium text-foreground text-center">Your Story</p>
+        </div>
+
+        {latestPerUser
+          .filter((s) => s.user._id !== currentUser?._id)
+          .map((story) => (
+            <div
+              key={story._id}
+              onClick={() => setViewStory(story)}
+              className="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0 group"
+            >
+              <div className="size-16 rounded-full p-[2.5px] bg-gradient-to-br from-gradient-start to-gradient-end transition group-hover:scale-105 group-active:scale-95">
+                <img
+                  src={story.user.profile_picture}
+                  className="size-full rounded-full object-cover border-2 border-card"
+                  alt=""
+                />
+              </div>
+              <p className="text-xs font-medium text-foreground text-center max-w-16 truncate">
+                {story.user.full_name}
+              </p>
+            </div>
+          ))}
       </div>
       {showModel && (
         <StoryModel setShowModel={setShowModel} fetchStories={fetchStories} />
