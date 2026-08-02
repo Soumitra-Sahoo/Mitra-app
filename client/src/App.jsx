@@ -205,7 +205,6 @@ const App = () => {
         }
       };
     };
-
     connect();
 
     return () => {

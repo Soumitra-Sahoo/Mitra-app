@@ -4,7 +4,7 @@ const commentSchema = new mongoose.Schema(
   {
     post_id: { type: String, ref: "Post", required: true },
     user_id: { type: String, ref: "User", required: true },
-    parent_id: { type: String, ref: "Comment", default: null }, // null = top-level
+    parent_id: { type: String, ref: "Comment", default: null },
     text: { type: String, required: true, trim: true },
     likes: [{ type: String, ref: "User" }],
   },

@@ -5,13 +5,10 @@ import { Phone, PhoneOff, Video } from "lucide-react";
 const IncomingCallModal = () => {
   const { callState, remoteUser, callType, acceptCall, declineCall } = useCall();
   const [responded, setResponded] = useState(false);
-
   React.useEffect(() => {
     if (callState !== "ringing") setResponded(false);
   }, [callState]);
-
   if (callState !== "ringing" || !remoteUser) return null;
-
   const handleAccept = () => {
     if (responded) return;
     setResponded(true);

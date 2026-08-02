@@ -5,10 +5,8 @@ import sendEmail from "../configs/nodeMailer.js";
 import Story from "../models/Story.js";
 import Message from "../models/Message.js";
 
-// Create a client to send and receive events
 export const inngest = new Inngest({ id: "Mitra-app" });
 
-// Inngest Function to create user data to a database
 const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk", event: "clerk/user.created" },
   async ({ event }) => {
@@ -20,16 +18,12 @@ const syncUserCreation = inngest.createFunction(
       .replace(/[^a-z0-9]/g, "");
 
     let username = baseUsername;
-
-    // Check availability of username
     let user = await User.findOne({ username });
 
     while (user) {
       username = baseUsername + Math.floor(1000 + Math.random() * 9000);
-
       user = await User.findOne({ username });
     }
-
     const userData = {
       _id: id,
       email: email_addresses[0].email_address,
@@ -42,7 +36,6 @@ const syncUserCreation = inngest.createFunction(
   },
 );
 
-// Inngest Function to update user data to a database
 const syncUserUpdation = inngest.createFunction(
   { id: "update-user-from-clerk", event: "clerk/user.updated" },
   async ({ event }) => {
@@ -59,7 +52,6 @@ const syncUserUpdation = inngest.createFunction(
   },
 );
 
-// Inngest Function to delete user data to a database
 const syncUserdeletion = inngest.createFunction(
   { id: "delete-user-with-clerk", event: "clerk/user.deleted" },
   async ({ event }) => {
@@ -68,7 +60,6 @@ const syncUserdeletion = inngest.createFunction(
   },
 );
 
-// Inngest function to send reminder when a new connection request is added
 const sendNewConnectionRequestReminder = inngest.createFunction(
   {
     id: "send-new-connection-request-reminder",
@@ -128,7 +119,6 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
   },
 );
 
-// Inngest function to delete story after 24 hours
 const deleteStory = inngest.createFunction(
   { id: "story-delete", event: "app/story.delete" },
   async ({ event, step }) => {
@@ -146,7 +136,7 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
   {
     id: "send-unseen-messages-notification",
     cron: "TZ=America/New_York 0 9 * * *",
-  }, // Every day 9 AM
+  },
   async ({ step }) => {
     const message = await Message.find({ seen: false }).populate("to_user_id");
     const unseenCount = {};
@@ -179,7 +169,6 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
   },
 );
 
-// Create an empty array where we'll export future Inngest functions
 export const functions = [
   syncUserCreation,
   syncUserUpdation,

@@ -3,10 +3,8 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 const Lightbox = ({ images, startIndex = 0, onClose }) => {
   const [current, setCurrent] = useState(startIndex);
-
   const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
   const next = () => setCurrent((c) => (c + 1) % images.length);
-
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "ArrowLeft") prev();

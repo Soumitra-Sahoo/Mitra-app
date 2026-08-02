@@ -20,7 +20,6 @@ messageRouter.post("/send", protect, upload.single("image"), sendMessage);
 messageRouter.post("/get", protect, getChatMessages);
 messageRouter.post("/typing", protect, typingIndicator);
 messageRouter.get("/unread/count", protect, getUnreadMessageCount);
-
 messageRouter.put("/:messageId/edit", protect, editMessage);
 messageRouter.delete("/:messageId/delete-for-me", protect, deleteMessageForMe);
 messageRouter.delete("/:messageId/delete-for-everyone", protect, deleteMessageForEveryone);

@@ -17,7 +17,6 @@ export const addUserStory = async (req, res) => {
       });
       media_url = response.url;
     }
-
     const story = await Story.create({
       user: userId,
       content,
@@ -25,12 +24,10 @@ export const addUserStory = async (req, res) => {
       media_type,
       background_color,
     });
-
     await inngest.send({
       name: "app/story.delete",
       data: { storyId: story._id },
     });
-
     res.json({ success: true });
   } catch (error) {
     console.log(error);
@@ -42,9 +39,7 @@ export const getStories = async (req, res) => {
   try {
     const { userId } = req.auth();
     const user = await User.findById(userId);
-
     const userIds = [userId, ...user.connections, ...user.following];
-
     const stories = await Story.find({
       user: { $in: userIds },
     })

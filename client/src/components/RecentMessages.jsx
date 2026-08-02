@@ -6,11 +6,9 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 const RecentMessages = () => {
-
     const [messages, setMessages] = useState([]);
     const { user } = useUser();
     const { getToken } = useAuth();
-
     const fetchRecentMessages = async () => {
         try {
             const token = await getToken();
