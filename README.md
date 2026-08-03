@@ -68,6 +68,25 @@ Security was treated as an ongoing audit process, not a one-time checklist:
 - **Rate limiting** on the API layer via `express-rate-limit`
 - **Consistent resource-level checks** — a single shared `canViewPost` utility enforces post visibility everywhere posts are read or acted on, rather than reimplementing the check per endpoint
 
+
+### UI/UX & Design System
+- Full light / dark / system theming, built on a CSS custom-property token architecture (not hardcoded colors duplicated per component)
+- Command palette (⌘K) for quick navigation across people and hashtags, with full keyboard support
+- Responsive, mobile-first layout with a dedicated bottom navigation bar and drawer sidebar on small screens
+- Motion and micro-interactions via Framer Motion (animated navigation state, hover/entrance transitions), applied selectively rather than uniformly
+
+---
+
+## Security Engineering
+
+Security was treated as an ongoing audit process, not a one-time checklist:
+
+- **XSS prevention** — post/comment content is rendered through safe React text interpolation rather than `dangerouslySetInnerHTML`, closing a stored-XSS vector in user-generated content
+- **IDOR fixes** — several endpoints were found and corrected to properly scope resource access to the requesting user (notification read-status, message deletion, profile visibility)
+- **Real HTTP status codes** — every endpoint returns accurate status codes (401/403/404/409/429/500) instead of always-200 responses, backed by a frontend interceptor so error handling stayed consistent through the change
+- **Rate limiting** on the API layer via `express-rate-limit`
+- **Consistent resource-level checks** — a single shared `canViewPost` utility enforces post visibility everywhere posts are read or acted on, rather than reimplementing the check per endpoint
+
 ---
 
 ## Performance Engineering
@@ -105,6 +124,11 @@ Security was treated as an ongoing audit process, not a one-time checklist:
 - Server-Sent Events (SSE) — messaging, presence, typing, call signaling
 - WebRTC — peer-to-peer voice/video calls
 
+
+**Real-Time Communication**
+- Server-Sent Events (SSE) — messaging, presence, typing, call signaling
+- WebRTC — peer-to-peer voice/video calls
+
 **Media Storage**
 - ImageKit — upload, CDN delivery, and on-the-fly transformation
 
@@ -113,6 +137,7 @@ Security was treated as an ongoing audit process, not a one-time checklist:
 
 **Development & Tooling**
 - Git, GitHub, Postman
+- Docker & Docker Compose
 
 ---
 
@@ -161,6 +186,36 @@ server/
 - Shared utilities to avoid duplicating security-relevant logic across controllers
 
 ---
+
+## Running with Docker
+
+The project ships with a `Dockerfile` per service and a root-level `docker-compose.yml` that orchestrates the frontend, backend, and a local MongoDB instance.
+
+**1. Copy the environment templates and fill in real values:**
+```bash
+cp server/.env.example server/.env
+cp .env.example .env
+```
+`server/.env` holds backend secrets (Clerk, ImageKit, SMTP). The root `.env` holds the frontend's `VITE_*` variables — these are baked into the static build at *build time*, not read at container runtime, since that's how Vite works.
+
+**2. Start everything:**
+```bash
+docker compose up --build
+```
+This runs MongoDB, the Express API, and the built frontend (served via nginx) together. Frontend: `http://localhost:5173`. Backend: `http://localhost:4000`.
+
+**A note on `VITE_BASE_URL`:** it must point to wherever your *browser* can reach the backend (e.g. `http://localhost:4000`), not the internal Docker service name — the frontend JS runs in the user's browser, outside the Docker network, so `http://server:4000` would not resolve there.
+
+**Using a remote database instead of the bundled MongoDB container:** the `server` service's `MONGODB_URL` is set in `docker-compose.yml` to point at the local `mongo` container by default. To use a hosted cluster (e.g. MongoDB Atlas) instead, remove that override from `docker-compose.yml` and set `MONGODB_URL` in `server/.env` instead — `environment` values in Compose take precedence over `env_file`, so the override has to be removed for `server/.env`'s value to take effect.
+
+
+
+- Modular full-stack architecture with clear separation between transport, business logic, and data layers
+- Two purpose-fit real-time transports (SSE for messaging, WebRTC for calls) rather than forcing one transport to do both
+- Security treated as continuous — specific, named vulnerability classes found and fixed, not just "auth is required"
+- A single shared authorization utility (`canViewPost`) enforced consistently across every surface that reads or mutates posts, rather than ad hoc checks per route
+- CSS custom-property design-token architecture — theme changes propagate from one source of truth instead of per-component overrides
+- Stateless backend services with resource-scoped authorization on every protected endpoint
 
 ## Engineering Highlights
 
