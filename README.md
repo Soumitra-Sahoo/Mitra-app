@@ -68,6 +68,25 @@ Security was treated as an ongoing audit process, not a one-time checklist:
 - **Rate limiting** on the API layer via `express-rate-limit`
 - **Consistent resource-level checks** — a single shared `canViewPost` utility enforces post visibility everywhere posts are read or acted on, rather than reimplementing the check per endpoint
 
+
+### UI/UX & Design System
+- Full light / dark / system theming, built on a CSS custom-property token architecture (not hardcoded colors duplicated per component)
+- Command palette (⌘K) for quick navigation across people and hashtags, with full keyboard support
+- Responsive, mobile-first layout with a dedicated bottom navigation bar and drawer sidebar on small screens
+- Motion and micro-interactions via Framer Motion (animated navigation state, hover/entrance transitions), applied selectively rather than uniformly
+
+---
+
+## Security Engineering
+
+Security was treated as an ongoing audit process, not a one-time checklist:
+
+- **XSS prevention** — post/comment content is rendered through safe React text interpolation rather than `dangerouslySetInnerHTML`, closing a stored-XSS vector in user-generated content
+- **IDOR fixes** — several endpoints were found and corrected to properly scope resource access to the requesting user (notification read-status, message deletion, profile visibility)
+- **Real HTTP status codes** — every endpoint returns accurate status codes (401/403/404/409/429/500) instead of always-200 responses, backed by a frontend interceptor so error handling stayed consistent through the change
+- **Rate limiting** on the API layer via `express-rate-limit`
+- **Consistent resource-level checks** — a single shared `canViewPost` utility enforces post visibility everywhere posts are read or acted on, rather than reimplementing the check per endpoint
+
 ---
 
 ## Performance Engineering
@@ -100,6 +119,11 @@ Security was treated as an ongoing audit process, not a one-time checklist:
 
 **Authentication**
 - Clerk Authentication & Webhooks
+
+**Real-Time Communication**
+- Server-Sent Events (SSE) — messaging, presence, typing, call signaling
+- WebRTC — peer-to-peer voice/video calls
+
 
 **Real-Time Communication**
 - Server-Sent Events (SSE) — messaging, presence, typing, call signaling
@@ -193,6 +217,15 @@ This runs MongoDB, the Express API, and the built frontend (served via nginx) to
 - CSS custom-property design-token architecture — theme changes propagate from one source of truth instead of per-component overrides
 - Stateless backend services with resource-scoped authorization on every protected endpoint
 
+## Engineering Highlights
+
+- Modular full-stack architecture with clear separation between transport, business logic, and data layers
+- Two purpose-fit real-time transports (SSE for messaging, WebRTC for calls) rather than forcing one transport to do both
+- Security treated as continuous — specific, named vulnerability classes found and fixed, not just "auth is required"
+- A single shared authorization utility (`canViewPost`) enforced consistently across every surface that reads or mutates posts, rather than ad hoc checks per route
+- CSS custom-property design-token architecture — theme changes propagate from one source of truth instead of per-component overrides
+- Stateless backend services with resource-scoped authorization on every protected endpoint
+
 ---
 
 ## Scalability Considerations
@@ -200,6 +233,7 @@ This runs MongoDB, the Express API, and the built frontend (served via nginx) to
 The current architecture runs as a single Node.js process with in-memory SSE connection tracking — appropriate at current scale, with a clear upgrade path already identified:
 
 - Redis-backed pub/sub for SSE, to support horizontal scaling beyond a single instance
+- Docker containerization
 - Kubernetes orchestration
 - CI/CD via GitHub Actions
 - Search indexing for full-text post/hashtag search

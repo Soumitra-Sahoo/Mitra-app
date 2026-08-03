@@ -30,7 +30,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
               </p>
             </div>
 
-            {/* If user is not others profile that means he is opening his profile so we will give edit button */}
             {!profileId && (
               <button
                 onClick={() => setShowEdit(true)}

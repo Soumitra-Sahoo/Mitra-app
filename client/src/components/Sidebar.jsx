@@ -14,8 +14,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, notificationCount, setNotificati
   return (
     <>
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 sm:hidden"
+        <div className="fixed inset-0 z-30 bg-black/50 sm:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

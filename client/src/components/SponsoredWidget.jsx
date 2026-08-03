@@ -8,8 +8,7 @@ const SponsoredWidget = () => {
       <img src={assets.sponsored_img} alt="" className="w-full rounded-xl" />
       <p className="text-foreground-secondary font-medium">Email marketing</p>
       <p className="text-muted">
-        Supercharge your marketing with a powerful, easy-to-use platform built
-        for results.
+        Supercharge your marketing with a powerful, easy-to-use platform built for results.
       </p>
     </div>
   );

@@ -100,7 +100,6 @@ export const deleteComment = async (req, res) => {
       return res.status(404).json({ success: false, message: "Comment not found" });
     if (comment.user_id !== userId)
       return res.status(403).json({ success: false, message: "Unauthorized" });
-
     await Comment.deleteMany({ _id: comment_id });
     await Comment.deleteMany({ parent_id: comment_id });
 
@@ -115,7 +114,6 @@ export const likeComment = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { comment_id } = req.params;
-
     const comment = await Comment.findById(comment_id);
     if (!comment)
       return res.status(404).json({ success: false, message: "Comment not found" });

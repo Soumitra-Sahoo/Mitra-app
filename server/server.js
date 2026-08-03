@@ -14,6 +14,7 @@ import commentRouter from "./routes/commentRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
 import callRouter from "./routes/callRoutes.js";
 import groupRouter from "./routes/groupRoutes.js";
+import bookmarkRouter from "./routes/bookmarkRoutes.js";
 
 const REQUIRED_ENV_VARS = [
   "MONGODB_URL",
@@ -70,6 +71,7 @@ app.use("/api/comment", commentRouter);
 app.use("/api/notification", notificationRouter);
 app.use("/api/call", callRouter);
 app.use("/api/group", groupRouter);
+app.use("/api/bookmark", bookmarkRouter);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Not found" });

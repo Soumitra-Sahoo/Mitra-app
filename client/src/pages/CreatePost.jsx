@@ -75,7 +75,6 @@ const CreatePost = () => {
   return (
     <div className="min-h-full bg-background transition-theme">
       <div className="max-w-6xl mx-auto p-6">
-        {/* Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Create Post
@@ -83,9 +82,7 @@ const CreatePost = () => {
           <p className="text-foreground-secondary">Share your thoughts with the world</p>
         </div>
 
-        {/* Form */}
         <div className="max-w-xl bg-card p-4 sm:p-8 rounded-xl shadow-md space-y-4">
-          {/* Header */}
           <div className="flex items-center gap-3">
             <img
               src={user.profile_picture}
@@ -116,7 +113,6 @@ const CreatePost = () => {
 
                 {showVisibilityMenu && (
                   <>
-                    {/* Click-outside overlay */}
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setShowVisibilityMenu(false)}

@@ -14,9 +14,7 @@ const StoryModel = ( {setShowModel, fetchStories}) => {
     const [media, setMedia] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [saving, setSaving] = useState(false);
-
     const { getToken } = useAuth();
-
     const MAX_VIDEO_DURATION = 60; 
     const MAX_VIDEO_SIZE_MB = 50;  
 

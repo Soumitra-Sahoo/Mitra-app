@@ -15,7 +15,6 @@ const CreateGroupModal = ({ onClose }) => {
   const [name, setName] = useState("");
   const [selected, setSelected] = useState(new Set());
   const [creating, setCreating] = useState(false);
-
   const toggle = (id) => {
     setSelected((prev) => {
       const next = new Set(prev);

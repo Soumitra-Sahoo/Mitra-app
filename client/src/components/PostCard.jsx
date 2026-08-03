@@ -471,7 +471,6 @@ const PostModal = ({
                 />
               </button>
             </div>
-            {/* Add comment */}
             <div className="flex items-center gap-2">
               <img
                 src={currentUser?.profile_picture}
@@ -527,7 +526,6 @@ const PostCard = ({ post, onDelete }) => {
       } catch (_) {}
     };
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post._id]);
 
   const handleLike = async () => {
@@ -562,8 +560,6 @@ const PostCard = ({ post, onDelete }) => {
         toast.success("Link copied to clipboard!");
       }
     } catch (error) {
-      // AbortError just means the user closed the native share sheet —
-      // that's a normal cancellation, not a failure worth surfacing.
       if (error.name !== "AbortError") {
         toast.error("Couldn't share this post");
       }
@@ -665,14 +661,12 @@ const PostCard = ({ post, onDelete }) => {
           <PostMenu isOwner={isOwner} onDelete={handleDeletePost} />
         </div>
 
-        {/* Content */}
         {post.content && (
           <div className="text-foreground text-sm whitespace-pre-line">
             {renderContentWithHashtags(post.content, navigate)}
           </div>
         )}
 
-        {/* Images — click opens lightbox */}
         {post.image_urls?.length > 0 && (
           <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-2xl">
             {post.image_urls.map((img, index) => (
@@ -688,7 +682,6 @@ const PostCard = ({ post, onDelete }) => {
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex items-center gap-6 text-foreground-secondary text-sm pt-3 border-t border-border">
           <button
             onClick={handleLike}

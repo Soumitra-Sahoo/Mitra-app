@@ -12,7 +12,6 @@ const items = [
 
 const BottomNav = ({ notificationCount, messageCount }) => {
   const location = useLocation();
-
   const badgeFor = (to) => {
     if (to === "/messages") return messageCount;
     if (to === "/notifications") return notificationCount;
