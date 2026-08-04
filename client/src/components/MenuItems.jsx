@@ -1,36 +1,45 @@
 import React from 'react'
 import { menuItemsData } from '../assets/assets'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
 const MenuItems = ({ setSidebarOpen, unreadCount = 0, setUnreadCount }) => {
+  const location = useLocation();
+
   return (
-    <div className='px-6 text-gray-600 dark:text-slate-300 space-y-1 font-medium'>
-      {menuItemsData.map(({ to, label, Icon }) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={to === '/'}
-          onClick={() => {
-            setSidebarOpen(false);
-            if (to === '/notifications' && setUnreadCount) setUnreadCount(0);
-          }}
-          className={({ isActive }) =>
-            `group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300
-            ${isActive
-              ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-200'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:translate-x-1'
-            }`
-          }
-        >
-          <Icon className='w-5 h-5 transition-transform duration-300 group-hover:scale-110' />
-          {label}
-          {label === 'Notifications' && unreadCount > 0 && (
-            <span className='ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center'>
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
-        </NavLink>
-      ))}
+    <div className='px-6 text-foreground-secondary space-y-1 font-medium'>
+      {menuItemsData.map(({ to, label, Icon }) => {
+        const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+        return (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            onClick={() => {
+              setSidebarOpen(false);
+              if (to === '/notifications' && setUnreadCount) setUnreadCount(0);
+            }}
+            className='group relative flex items-center gap-3 px-4 py-3 rounded-2xl overflow-hidden'
+          >
+            {isActive && (
+              <motion.div
+                layoutId="activeNavPill"
+                className="absolute inset-0 bg-gradient-to-r from-gradient-start to-gradient-end shadow-lg shadow-primary/20"
+                transition={{ type: "spring", stiffness: 400, damping: 32 }}
+              />
+            )}
+            <Icon
+              className={`relative w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-white" : ""}`}
+            />
+            <span className={`relative ${isActive ? "text-white" : ""}`}>{label}</span>
+            {label === 'Notifications' && unreadCount > 0 && (
+              <span className='relative ml-auto bg-danger text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center'>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </NavLink>
+        );
+      })}
     </div>
   )
 }

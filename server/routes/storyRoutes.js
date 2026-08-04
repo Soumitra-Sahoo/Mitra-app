@@ -5,7 +5,7 @@ import { addUserStory, getStories } from "../controllers/storyController.js";
 
 const storyRouter = express.Router();
 
-storyRouter.post("/create", protect, uploadStoryMedia.single("media"), addUserStory);
 storyRouter.get("/get", protect, getStories);
+storyRouter.post("/create", protect, uploadStoryMedia.single("media"), addUserStory);
 
 export default storyRouter;
