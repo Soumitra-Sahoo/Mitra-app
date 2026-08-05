@@ -1,14 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCall } from "../context/CallContext.jsx";
-import {
-  Phone,
-  Mic,
-  MicOff,
-  Video,
-  VideoOff,
-  Volume2,
-  Speaker,
-} from "lucide-react";
+import {Phone, Mic, MicOff, Video, VideoOff, Volume2, Speaker} from "lucide-react";
 import toast from "react-hot-toast";
 
 const formatDuration = (seconds) => {

@@ -6,11 +6,10 @@ import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 
 const ProfileModel = ({ setShowEdit }) => {
-  const dispatch = useDispatch();
-  const { getToken } = useAuth();
-  const user = useSelector((state) => state.user.value);
-
-  const [editForm, setEditForm] = useState({
+const dispatch = useDispatch();
+const { getToken } = useAuth();
+const user = useSelector((state) => state.user.value);
+const [editForm, setEditForm] = useState({
     username: user.username,
     bio: user.bio,
     location: user.location,
@@ -18,9 +17,8 @@ const ProfileModel = ({ setShowEdit }) => {
     full_name: user.full_name,
     cover_photo: null,
   });
-
-  const [profilePreview, setProfilePreview] = useState(null);
-  const [coverPreview, setCoverPreview] = useState(null);
+ const [profilePreview, setProfilePreview] = useState(null);
+ const [coverPreview, setCoverPreview] = useState(null);
 
   useEffect(() => {
     if (!editForm.profile_picture) {
