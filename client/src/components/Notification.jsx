@@ -3,8 +3,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom'
 
 const Notification = ({t, message}) => {
-
-    const navigate = useNavigate();
+const navigate = useNavigate();
 
   return (
     <div className={`max-w-md w-full bg-card shadow-lg rounded-lg flex border border-border hover:scale-105 transition`}>

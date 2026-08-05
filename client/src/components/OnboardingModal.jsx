@@ -4,38 +4,29 @@ import { useDispatch, useSelector } from "react-redux";
 import api from "../api/axios.js";
 import toast from "react-hot-toast";
 import { updateUser } from "../store/slices/userSlice.js";
-import {
-  Pencil,
-  Sparkles,
-  MapPin,
-  FileText,
-  User,
-  ChevronRight,
-  X,
-} from "lucide-react";
+import {Pencil, Sparkles, MapPin, FileText, User, ChevronRight, X} from "lucide-react";
 
 const STEPS = ["welcome", "avatar", "bio", "location", "done"];
 
 const OnboardingModal = () => {
-  const { getToken } = useAuth();
-  const dispatch = useDispatch();
-  const currentUser = useSelector((s) => s.user.value);
-
-  const [show, setShow] = useState(false);
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
+const { getToken } = useAuth();
+const dispatch = useDispatch();
+const currentUser = useSelector((s) => s.user.value);
+const [show, setShow] = useState(false);
+const [step, setStep] = useState(0);
+const [form, setForm] = useState({
     bio: "",
     location: "",
     profile_picture: null,
   });
-  const [preview, setPreview] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [checked, setChecked] = useState(false);
+const [preview, setPreview] = useState(null);
+const [saving, setSaving] = useState(false);
+const [checked, setChecked] = useState(false);
 
-  useEffect(() => {
-    if (!currentUser || checked) return;
-    const check = async () => {
-      try {
+useEffect(() => {
+  if (!currentUser || checked) return;
+  const check = async () => {
+    try {
         const token = await getToken();
         const { data } = await api.get("/api/user/onboarding", {
           headers: { Authorization: `Bearer ${token}` },
@@ -76,10 +67,8 @@ const OnboardingModal = () => {
     setSaving(false);
   }
 };
-
   if (!show) return null;
-
-  const current = STEPS[step];
+const current = STEPS[step];
 
   return (
     <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
