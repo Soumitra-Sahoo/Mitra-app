@@ -234,12 +234,10 @@ The current architecture runs as a single Node.js process with in-memory SSE con
 
 - Redis-backed pub/sub for SSE, to support horizontal scaling beyond a single instance
 - Docker containerization
-- Kubernetes orchestration
 - CI/CD via GitHub Actions
 - Search indexing for full-text post/hashtag search
 - Push notification service
 - Observability (structured logging, metrics, tracing)
-- CDN-backed media delivery (partially addressed today via ImageKit's own CDN)
 - SFU-based group calling for larger call sizes (current WebRTC implementation is peer-to-peer mesh, practically capped around 4 participants by design)
 
 ---
@@ -251,4 +249,3 @@ The current architecture runs as a single Node.js process with in-memory SSE con
 - Event-Driven Design where appropriate, direct request/response where simpler
 - Secure-by-default APIs — deny by default, explicitly grant access
 - Reusable components and shared utilities over duplicated logic
-- Honest scope — features are either fully implemented or clearly marked as future work, never partially faked
