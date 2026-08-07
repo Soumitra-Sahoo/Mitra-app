@@ -391,10 +391,7 @@ const ChatBox = () => {
           {[...messages]
             .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
             .map((message, index) => {
-              const isMyMessage =
-                message.from_user_id === currentUser?._id ||
-                message.from_user_id?._id === currentUser?._id;
-
+              const isMyMessage = message.from_user_id?._id === currentUser?._id;
               if (message.message_type === "system") {
                 return (
                   <div key={message._id || index} className="flex justify-center">

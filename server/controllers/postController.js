@@ -63,42 +63,25 @@ const addPost = async (req, res) => {
 const getFeedPosts = async (req, res) => {
   try {
     const { userId } = req.auth();
-
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 10, 30);
-    const skip = (page - 1) * limit;
 
     const user = await User.findById(userId);
     const userIds = [userId, ...user.connections, ...user.following];
-    const filter = {
-      user: {
-        $in: userIds,
-      },
-    };
-
-    const [posts, total] = await Promise.all([
-      Post.find(filter)
-        .populate("user")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      Post.countDocuments(filter),
-    ]);
-    
-    const visiblePosts = posts.filter((post) => canViewPost(post, userId));
+    const filter = { user: { $in: userIds } };
+    const allPosts = await Post.find(filter).populate("user").sort({ createdAt: -1 });
+    const visiblePosts = allPosts.filter((post) => canViewPost(post, userId));
+    const skip = (page - 1) * limit;
+    const pagePosts = visiblePosts.slice(skip, skip + limit);
 
     res.json({
       success: true,
-      posts: visiblePosts,
+      posts: pagePosts,
       page,
-      hasMore: skip + posts.length < total,
+      hasMore: skip + pagePosts.length < visiblePosts.length,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -244,13 +227,11 @@ const getPostsByHashtag = async (req, res) => {
 const getTrendingHashtags = async (req, res) => {
   try {
     const posts = await Post.find({
-      content: {
-        $exists: true,
-        $ne: "",
-      },
+      content: {$exists: true, $ne: ""},
       $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
     })
       .select("content")
+      .sort({ createdAt: -1 })
       .limit(500);
 
     const tagCount = {};

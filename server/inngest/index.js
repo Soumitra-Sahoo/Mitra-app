@@ -5,6 +5,14 @@ import sendEmail from "../configs/nodeMailer.js";
 import Story from "../models/Story.js";
 import Message from "../models/Message.js";
 
+const escapeHtml = (str = "") =>
+  String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
 export const inngest = new Inngest({ id: "Mitra-app" });
 
 const syncUserCreation = inngest.createFunction(
@@ -74,8 +82,8 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
       );
       const subject = `New Connection Request`;
       const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
-                                <h2>Hi ${connection.to_user_id.full_name},</h2>
-                                <p>You have a new connection request from ${connection.from_user_id.full_name} . @${connection.from_user_id.username}</p>
+                                <h2>Hi ${escapeHtml(connection.to_user_id.full_name)},</h2>
+                                <p>You have a new connection request from ${escapeHtml(connection.from_user_id.full_name)} . @${escapeHtml(connection.from_user_id.username)}</p>
                                 <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">here</a> to accept or reject the request</p>
                                 <br />
                                 <p>Thanks,<br />Mitra - Stay Connected</p>
@@ -101,8 +109,8 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
 
       const subject = `New Connection Request`;
       const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
-                                <h2>Hi ${connection.to_user_id.full_name},</h2>
-                                <p>You have a new connection request from ${connection.from_user_id.full_name} . @${connection.from_user_id.username}</p>
+                                <h2>Hi ${escapeHtml(connection.to_user_id.full_name)},</h2>
+                                <p>You have a new connection request from ${escapeHtml(connection.from_user_id.full_name)} . @${escapeHtml(connection.from_user_id.username)}</p>
                                 <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">here</a> to accept or reject the request</p>
                                 <br />
                                 <p>Thanks,<br />Mitra - Stay Connected</p>
@@ -138,10 +146,15 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
     cron: "TZ=America/New_York 0 9 * * *",
   },
   async ({ step }) => {
-    const message = await Message.find({ seen: false }).populate("to_user_id");
+    const message = await Message.find({
+      seen: false,
+      to_user_id: { $ne: null },
+      group_id: null,
+    }).populate("to_user_id");
     const unseenCount = {};
 
-    message.map((message) => {
+    message.forEach((message) => {
+      if (!message.to_user_id) return;
       unseenCount[message.to_user_id._id] =
         (unseenCount[message.to_user_id._id] || 0) + 1;
     });
@@ -152,7 +165,7 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
       const subject = `You have ${unseenCount[userId]} unseen messages`;
 
       const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
-                            <h2>Hi ${user.full_name},</h2>
+                            <h2>Hi ${escapeHtml(user.full_name)},</h2>
                             <p>You have ${unseenCount[userId]} unseen messages</p>
                             <p>Click <a href="${process.env.FRONTEND_URL}/messages" style="color: #10b981;">here</a> to view them</p>
                             <br />

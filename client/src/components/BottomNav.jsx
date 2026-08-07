@@ -1,14 +1,18 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, MessageCircle, Bell, User } from "lucide-react";
 import { motion } from "framer-motion";
+import { menuItemsData } from "../assets/assets";
 
-const items = [
-  { to: "/", label: "Home", Icon: Home },
-  { to: "/messages", label: "Messages", Icon: MessageCircle },
-  { to: "/notifications", label: "Alerts", Icon: Bell },
-  { to: "/profile", label: "Profile", Icon: User },
+const BOTTOM_NAV_PATHS = [
+  "/",
+  "/messages",
+  "/notifications",
+  "/profile",
 ];
+
+const items = BOTTOM_NAV_PATHS.map((path) =>
+  menuItemsData.find((item) => item.to === path)
+).filter(Boolean);
 
 const BottomNav = ({ notificationCount, messageCount }) => {
   const location = useLocation();
