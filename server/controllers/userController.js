@@ -11,7 +11,9 @@ const getUserData = async (req, res) => {
     const { userId } = req.auth();
     const user = await User.findById(userId);
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     res.json({ success: true, user });
   } catch (error) {
     console.log(error);
@@ -24,20 +26,19 @@ const updateUserData = async (req, res) => {
     const { userId } = req.auth();
     let { username, bio, location, full_name } = req.body;
     const tempUser = await User.findById(userId);
-    !username && (username = tempUser.username);
+    if (!username) username = tempUser.username;
     if (tempUser.username !== username) {
-      const user = await User.findOne({ username });
-
-      if (user) {
-        username = tempUser.username;
+      const existing = await User.findOne({ username });
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          message: "That username is already taken",
+        });
       }
     }
-
-    const updatedData = {username, bio, location, full_name};
-
+    const updatedData = { username, bio, location, full_name };
     const profile = req.files.profile && req.files.profile[0];
     const cover = req.files.cover && req.files.cover[0];
-
     if (profile) {
       const response = await imagekit.upload({
         file: profile.buffer,
@@ -107,7 +108,7 @@ const discoverUsers = async (req, res) => {
       });
     }
 
-    res.json({success: true, users});
+    res.json({ success: true, users });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -128,15 +129,9 @@ const followUser = async (req, res) => {
       });
     }
 
-    await User.updateOne(
-      { _id: userId },
-      { $addToSet: { following: id } },
-    );
+    await User.updateOne({ _id: userId }, { $addToSet: { following: id } });
 
-    await User.updateOne(
-      { _id: id },
-      { $addToSet: { followers: userId } },
-    );
+    await User.updateOne({ _id: id }, { $addToSet: { followers: userId } });
 
     await Notification.create({
       recipient_id: id,
@@ -162,15 +157,9 @@ const unfollowUser = async (req, res) => {
     const { userId } = req.auth();
     const { id } = req.body;
 
-    await User.updateOne(
-      { _id: userId },
-      { $pull: { following: id } },
-    );
+    await User.updateOne({ _id: userId }, { $pull: { following: id } });
 
-    await User.updateOne(
-      { _id: id },
-      { $pull: { followers: userId } },
-    );
+    await User.updateOne({ _id: id }, { $pull: { followers: userId } });
 
     res.json({
       success: true,
@@ -230,7 +219,9 @@ const sendConnectionReqest = async (req, res) => {
       });
     }
 
-    return res.status(409).json({ success: false, message: "Connection request pending" });
+    return res
+      .status(409)
+      .json({ success: false, message: "Connection request pending" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: error.message });
@@ -284,15 +275,9 @@ const acceptConnectionRequest = async (req, res) => {
       });
     }
 
-    await User.updateOne(
-      { _id: userId },
-      { $addToSet: { connections: id } },
-    );
+    await User.updateOne({ _id: userId }, { $addToSet: { connections: id } });
 
-    await User.updateOne(
-      { _id: id },
-      { $addToSet: { connections: userId } },
-    );
+    await User.updateOne({ _id: id }, { $addToSet: { connections: userId } });
 
     connection.status = "accepted";
     await connection.save();
@@ -325,7 +310,9 @@ const getUserProfiles = async (req, res) => {
     const { profileId } = req.body;
     const profile = await User.findById(profileId).select("-email");
     if (!profile) {
-      return res.status(404).json({ success: false, message: "Profile not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Profile not found" });
     }
     const posts = await Post.find({ user: profileId }).populate(
       "user",
@@ -387,7 +374,9 @@ const getOnboardingStatus = async (req, res) => {
     const { userId } = req.auth();
     const user = await User.findById(userId);
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     const needsOnboarding =
       !user.bio ||

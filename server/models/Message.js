@@ -9,6 +9,7 @@ const messageSchema = new mongoose.Schema({
     media_url: {type: String},
     delivered: { type: Boolean, default: false },
     seen: {type: Boolean, default: false},
+    seen_by: [{ type: String, ref: "User" }],
     call_type: {type: String, enum: ['audio', 'video']},
     call_status: {type: String, enum: ['completed', 'missed', 'declined', 'cancelled']},
     call_duration: {type: Number, default: 0},

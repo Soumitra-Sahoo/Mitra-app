@@ -1,8 +1,30 @@
-import { BadgeCheck, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { BadgeCheck, X } from "lucide-react";
+import api from "../api/axios";
 
 const StoryViewer = ({ viewStory, setViewStory }) => {
   const [progress, setProgress] = useState(0);
+  const { getToken } = useAuth();
+  useEffect(() => {
+  if (!viewStory?._id) return;
+  const markViewed = async () => {
+    try {
+      const token = await getToken();
+      await api.post(
+        `/api/story/${viewStory._id}/view`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (_) {}
+  };
+
+  markViewed();
+}, [viewStory?._id, getToken]);
   useEffect(() => {
     let timer, progressInterval;
     if (viewStory && viewStory.media_type !== "video") {
@@ -76,14 +98,12 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
             : "#000000",
       }}
     >
-      {/* Progress Bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gray-700">
         <div
           className="h-full bg-white transition-all duration-100 linear"
           style={{ width: `${progress}%` }}
         ></div>
       </div>
-      {/* User Info - Top Left */}
       <div className="absolute top-4 left-4 flex items-center space-x-3 p-2 px-4 sm:p-4 sm:px-8 backdrop-blur-2xl rounded bg-black/50">
         <img
           src={viewStory.user?.profile_picture}
@@ -96,7 +116,6 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
           {viewStory.user?.verified && <BadgeCheck size={18} />}
         </div>
       </div>
-      {/* Close Button */}
       <button
         onClick={handleClose}
         className="absolute top-4 right-4 text-white text-3xl font-bold focus:outline-none"

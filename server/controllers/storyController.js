@@ -52,3 +52,14 @@ export const getStories = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const markStoryViewed = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const { storyId } = req.params;
+    await Story.updateOne({ _id: storyId }, { $addToSet: { views_count: userId } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

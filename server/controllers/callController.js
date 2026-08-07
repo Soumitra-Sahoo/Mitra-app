@@ -92,6 +92,11 @@ export const rejectCall = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { to, callId, callType, reason } = req.body;
+
+    if (!(await isConnected(userId, to))) {
+      return res.status(403).json({ success: false, message: "Not connected" });
+    }
+
     const message = await Message.create({
       from_user_id: to,
       to_user_id: userId,
@@ -99,17 +104,9 @@ export const rejectCall = async (req, res) => {
       call_type: callType,
       call_status: reason === "busy" ? "missed" : "declined",
     });
-    const populated = await Message.findById(message._id).populate(
-      "from_user_id",
-    );
+    const populated = await Message.findById(message._id).populate("from_user_id");
 
-    pushEvent(to, {
-      type: "call-rejected",
-      callId,
-      reason: reason || "declined",
-      message: populated,
-    });
-
+    pushEvent(to, { type: "call-rejected", callId, reason: reason || "declined", message: populated });
     res.json({ success: true, message: populated });
   } catch (error) {
     console.log(error);
@@ -122,6 +119,9 @@ export const endCall = async (req, res) => {
     const { userId } = req.auth();
     const { to, callId, callType, status, duration } = req.body;
 
+    if (!(await isConnected(userId, to))) {
+      return res.status(403).json({ success: false, message: "Not connected" });
+    }
     const message = await Message.create({
       from_user_id: userId,
       to_user_id: to,
@@ -130,15 +130,11 @@ export const endCall = async (req, res) => {
       call_status: status || "completed",
       call_duration: duration || 0,
     });
-    const populated = await Message.findById(message._id).populate(
-      "from_user_id",
-    );
+    const populated = await Message.findById(message._id).populate("from_user_id");
 
     pushEvent(to, { type: "call-ended", callId, message: populated });
-
     res.json({ success: true, message: populated });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
