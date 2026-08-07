@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { BadgeCheck, X } from "lucide-react";
-import api from "../lib/axios";
+import api from "../api/axios";
 
 const StoryViewer = ({ viewStory, setViewStory }) => {
   const [progress, setProgress] = useState(0);
