@@ -13,7 +13,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { assets } from "../assets/assets.js";
+import Logo from "./Logo.jsx";
 
 const Header = ({
   notificationCount,
@@ -48,14 +48,7 @@ const Header = ({
       </button>
 
       <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-        <img
-          src={
-            document.documentElement.classList.contains("dark")
-              ? assets.logoDark
-              : assets.logoLight
-          }
-          alt="Mitra"
-        />
+        <Logo className="h-8" />
       </Link>
 
       <button
