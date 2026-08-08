@@ -8,6 +8,7 @@ import {
   getPostsByHashtag,
   getTrendingHashtags,
   deletePost,
+  getPostById,
 } from "../controllers/postController.js";
 
 const postRouter = express.Router();
@@ -17,6 +18,7 @@ postRouter.get("/feed", protect, getFeedPosts);
 postRouter.post("/like", protect, likePost);
 postRouter.get("/hashtag/:tag", protect, getPostsByHashtag);
 postRouter.get("/trending-hashtags", protect, getTrendingHashtags);
+postRouter.get("/:postId", protect, getPostById);
 postRouter.delete("/:postId", protect, deletePost);
 
 export default postRouter;

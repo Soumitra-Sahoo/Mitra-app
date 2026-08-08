@@ -65,23 +65,57 @@ const getFeedPosts = async (req, res) => {
     const { userId } = req.auth();
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 10, 30);
-
     const user = await User.findById(userId);
     const userIds = [userId, ...user.connections, ...user.following];
-    const filter = { user: { $in: userIds } };
-    const allPosts = await Post.find(filter).populate("user").sort({ createdAt: -1 });
-    const visiblePosts = allPosts.filter((post) => canViewPost(post, userId));
+    const filter = {user: { $in: userIds }};
+    const allPosts = await Post.find(filter)
+      .populate("user")
+      .sort({ createdAt: -1 });
+    const visiblePosts = allPosts.filter((post) =>
+      canViewPost(post, userId)
+    );
     const skip = (page - 1) * limit;
     const pagePosts = visiblePosts.slice(skip, skip + limit);
+    const postIds = pagePosts.map((post) => post._id);
+    const commentCounts = await Comment.aggregate([
+      {
+        $match: {
+          post_id: {
+            $in: postIds,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$post_id",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const countMap = Object.fromEntries(
+      commentCounts.map((item) => [
+        item._id.toString(),
+        item.count,
+      ])
+    );
+
+    const postsWithCounts = pagePosts.map((post) => ({
+      ...post.toObject(),
+      comment_count: countMap[post._id.toString()] || 0,
+    }));
 
     res.json({
       success: true,
-      posts: pagePosts,
+      posts: postsWithCounts,
       page,
       hasMore: skip + pagePosts.length < visiblePosts.length,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -267,6 +301,37 @@ const getTrendingHashtags = async (req, res) => {
   }
 };
 
+const getPostById = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const { postId } = req.params;
+    const post = await Post.findById(postId).populate("user");
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    if (!canViewPost(post, userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to view this post",
+      });
+    }
+
+    res.json({
+      success: true,
+      post,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export {
   addPost,
   getFeedPosts,
@@ -274,4 +339,5 @@ export {
   deletePost,
   getPostsByHashtag,
   getTrendingHashtags,
+  getPostById,
 };

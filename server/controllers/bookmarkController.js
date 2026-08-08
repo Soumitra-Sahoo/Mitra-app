@@ -6,7 +6,6 @@ export const toggleBookmark = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { postId } = req.body;
-
     const post = await Post.findById(postId).populate("user");
     if (!post) {
       return res
@@ -32,7 +31,6 @@ export const toggleBookmark = async (req, res) => {
     await Bookmark.create({ user_id: userId, post_id: postId });
     res.json({ success: true, bookmarked: true });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -40,24 +38,15 @@ export const toggleBookmark = async (req, res) => {
 export const getBookmarks = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const bookmarks = await Bookmark.find({ user_id: userId }).sort({
-      createdAt: -1,
-    });
+    const bookmarks = await Bookmark.find({ user_id: userId }).sort({ createdAt: -1 });
+    const postIds = bookmarks.map((b) => b.post_id);
 
-    const posts = await Promise.all(
-      bookmarks.map(async (b) => {
-        const post = await Post.findById(b.post_id).populate("user");
-        return post;
-      }),
-    );
-
-    const visiblePosts = posts.filter(
-      (post) => post && canViewPost(post, userId),
-    );
-
+    const posts = await Post.find({ _id: { $in: postIds } }).populate("user");
+    const postMap = Object.fromEntries(posts.map((p) => [p._id.toString(), p]));
+    const orderedPosts = postIds.map((id) => postMap[id]).filter(Boolean);
+    const visiblePosts = orderedPosts.filter((post) => canViewPost(post, userId));
     res.json({ success: true, posts: visiblePosts });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -70,7 +59,6 @@ export const getBookmarkedPostIds = async (req, res) => {
     );
     res.json({ success: true, postIds: bookmarks.map((b) => b.post_id) });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -15,6 +15,7 @@ import Discover from "./pages/Discover";
 import Profile from "./pages/Profile";
 import CreatePost from "./pages/CreatePost";
 import Layout from "./pages/Layout";
+import PostView from "./pages/PostView";
 import NotificationsPage from "./pages/NotificationsPage";
 import HashtagPage from "./pages/HashtagPage";
 import Bookmarks from "./components/Bookmarks.jsx";
@@ -237,6 +238,7 @@ const App = () => {
           <Route path="create-post" element={<CreatePost />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="hashtag/:tag" element={<HashtagPage />} />
+          <Route path="post/:postId" element={<PostView />} />
         </Route>
       </Routes>
     </OnlineContext.Provider>

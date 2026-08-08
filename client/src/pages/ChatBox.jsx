@@ -52,9 +52,7 @@ const ChatBox = () => {
   const { onlineUsers, typingUsers } = useOnline();
   const { resolvedTheme } = useTheme();
   const { callState, startCall } = useCall();
-
   const isGroup = Boolean(groupId);
-
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -73,6 +71,7 @@ const ChatBox = () => {
   const typingTimeout = useRef(null);
   const longPressTimer = useRef(null);
   const connections = useSelector((state) => state.connections.connections);
+  const connectionsStatus = useSelector((state) => state.connections.status);
 
   const isOnline = !isGroup && onlineUsers.has(userId);
   const otherTyping = isGroup ? typingUsers[`group:${groupId}`] : typingUsers[userId];
@@ -159,13 +158,14 @@ const ChatBox = () => {
 
   const sendMessage = async () => {
     try {
-      if (!text && !image) return;
+      const trimmedText = text.trim();
+      if (!trimmedText && !image) return;
 
       if (editingMessage) {
         const token = await getToken();
         const { data } = await api.put(
           `/api/message/${editingMessage._id}/edit`,
-          { text },
+          { text: trimmedText },
           { headers: { Authorization: `Bearer ${token}` } },
         );
         if (data.success) {
@@ -188,7 +188,7 @@ const ChatBox = () => {
       const formData = new FormData();
       if (isGroup) formData.append("group_id", groupId);
       else formData.append("to_user_id", userId);
-      formData.append("text", text);
+      formData.append("text", trimmedText);
       if (replyingTo) formData.append("reply_to", replyingTo._id);
       image && formData.append("image", image);
 
@@ -301,8 +301,43 @@ const ChatBox = () => {
     setForwardingMessage(message);
   };
 
-  if (!isGroup && !user) return null;
-  if (isGroup && !group) return null;
+  if (!isGroup && !user) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center p-6">
+      <p className="text-foreground-secondary font-medium">
+        You can't message this person
+      </p>
+      <p className="text-muted text-sm mt-1">
+        You may no longer be connected, or this conversation doesn't exist.
+      </p>
+      <button
+        onClick={() => navigate("/messages")}
+        className="mt-4 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition text-sm font-medium"
+      >
+        Back to Messages
+      </button>
+    </div>
+  );
+}
+
+if (isGroup && !group) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center p-6">
+      <p className="text-foreground-secondary font-medium">
+        Group not found
+      </p>
+      <p className="text-muted text-sm mt-1">
+        This group may no longer exist or you may not have access to it.
+      </p>
+      <button
+        onClick={() => navigate("/messages")}
+        className="mt-4 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition text-sm font-medium"
+      >
+        Back to Messages
+      </button>
+    </div>
+  );
+}
 
   const headerName = isGroup ? group.name : user.full_name;
   const headerPhoto = isGroup ? group.photo : user.profile_picture;

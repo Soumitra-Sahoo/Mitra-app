@@ -36,10 +36,8 @@ if (missing.length > 0) {
   );
   process.exit(1);
 }
-
 const app = express();
 app.set("trust proxy", 1);
-
 await connectDB();
 
 app.use(express.json({ limit: "2mb" }));
@@ -58,6 +56,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many requests, please try again later." },
+  skip: (req) => req.path.startsWith("/api/message/") && req.method === "GET" && req.params?.userId,
 });
 app.use("/api", apiLimiter);
 
