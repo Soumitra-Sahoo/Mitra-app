@@ -3,11 +3,13 @@ import sample_profile from "./sample_profile.jpg";
 import bgImage from "./bgImage.png";
 import group_users from "./group_users.png";
 import sponsored_img from "./sponsored_img.png";
-import {Home, MessageCircle, Search, UserIcon, Users, Bell, Bookmark} from "lucide-react";
+import { Home, MessageCircle, Search, UserIcon, Users, Bell, Bookmark } from "lucide-react";
 
 export const assets = {
-  logoLight: "/logo-light.png",
-  logoDark: "/logo-dark.png",
+  logoIconLight: "/favicon-light.png",
+  logoIconDark: "/favicon-dark.png",
+  logoBannerLight: "/logo-light.png",
+  logoBannerDark: "/logo-dark.png",
   sample_cover,
   sample_profile,
   bgImage,
