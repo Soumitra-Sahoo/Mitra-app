@@ -8,6 +8,19 @@ export const addUserStory = async (req, res) => {
     const { userId } = req.auth();
     const { content, media_type, background_color } = req.body;
     const media = req.file;
+    if ((media_type === "image" || media_type === "video") && !media) {
+      return res.status(400).json({
+        success: false,
+        message: "Media file is required for this story type",
+      });
+    }
+    if (media_type === "text" && !content?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Story text can't be empty",
+      });
+    }
+
     let media_url = "";
 
     if (media_type === "image" || media_type === "video") {
@@ -17,6 +30,7 @@ export const addUserStory = async (req, res) => {
       });
       media_url = response.url;
     }
+
     const story = await Story.create({
       user: userId,
       content,
@@ -28,10 +42,15 @@ export const addUserStory = async (req, res) => {
       name: "app/story.delete",
       data: { storyId: story._id },
     });
-    res.json({ success: true });
+
+    res.json({
+      success: true,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 

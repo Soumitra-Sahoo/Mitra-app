@@ -35,42 +35,15 @@ const ActiveCall = () => {
   const [usingAltOutput, setUsingAltOutput] = useState(false);
 
   useEffect(() => {
-    const el = localVideoRef.current;
-    if (!el) return;
-    if (el.srcObject !== localStream) {
-      el.srcObject = localStream || null;
-    }
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      console.log(
-        "[local video attach]",
-        "hasStream:", !!localStream,
-        "videoTrack readyState:", videoTrack?.readyState,
-        "videoTrack enabled:", videoTrack?.enabled,
-        "videoTrack muted:", videoTrack?.muted,
-      );
-      el.play()
-        .then(() => console.log("[local video] play() succeeded"))
-        .catch((err) => console.log("[local video] play() failed:", err.name, err.message));
-    }
-  }, [localStream]);
-
-  useEffect(() => {
-    if (!localStream) return;
-    const id = setTimeout(() => {
-      const el = localVideoRef.current;
-      if (el) {
-        console.log(
-          "[local video check, 2s later]",
-          "videoWidth:", el.videoWidth,
-          "videoHeight:", el.videoHeight,
-          "paused:", el.paused,
-          "readyState:", el.readyState,
-        );
-      }
-    }, 2000);
-    return () => clearTimeout(id);
-  }, [localStream]);
+  const el = localVideoRef.current;
+  if (!el) return;
+  if (el.srcObject !== localStream) {
+    el.srcObject = localStream || null;
+  }
+  if (localStream) {
+    el.play().catch(() => {});
+  }
+}, [localStream]);
 
   useEffect(() => {
     const el = remoteVideoRef.current;
@@ -108,32 +81,34 @@ const ActiveCall = () => {
       .catch(() => {});
   };
 
-  const toggleSpeaker = async () => {
-    const el = remoteVideoRef.current;
-    if (!el || typeof el.setSinkId !== "function") {
-      toast(
-        "Your phone's browser doesn't allow switching speaker/earpiece from a website — that's controlled by your phone's OS, not the app.",
-        { icon: "🔈", duration: 4000 },
-      );
+const toggleSpeaker = async () => {
+  const el = remoteVideoRef.current;
+  if (!el || typeof el.setSinkId !== "function") {
+    toast(
+      "Your phone's browser doesn't allow switching speaker/earpiece from a website — that's controlled by your phone's OS, not the app.",
+      { icon: "🔈", duration: 4000 },
+    );
+    return;
+  }
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter((d) => d.kind === "audiooutput");
+    if (outputs.length < 2) {
+      toast("No alternate audio output device found on this computer", { icon: "🔈" });
       return;
     }
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const outputs = devices.filter((d) => d.kind === "audiooutput");
-      if (outputs.length < 2) {
-        toast("No alternate audio output device found on this computer", { icon: "🔈" });
-        return;
-      }
-      const next = usingAltOutput
-        ? outputs.find((d) => d.deviceId === "default") || outputs[0]
-        : outputs.find((d) => d.deviceId !== "default") || outputs[1];
-      await el.setSinkId(next.deviceId);
-      setUsingAltOutput((v) => !v);
-      toast.success(`Audio output: ${next.label || "switched"}`);
-    } catch (err) {
-      toast.error("Couldn't switch audio output");
-    }
-  };
+    const currentSinkId = el.sinkId || "";
+    const currentIndex = outputs.findIndex((d) => d.deviceId === currentSinkId);
+    const nextIndex = currentIndex === 0 ? 1 : 0;
+    const next = outputs[nextIndex];
+
+    await el.setSinkId(next.deviceId);
+    setUsingAltOutput((v) => !v);
+    toast.success(`Audio output: ${next.label || "switched"}`);
+  } catch (err) {
+    toast.error("Couldn't switch audio output");
+  }
+};
 
   if (callState !== "calling" && callState !== "connected") return null;
   if (!remoteUser) return null;

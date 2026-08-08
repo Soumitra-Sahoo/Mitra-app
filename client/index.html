@@ -2,21 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      id="app-favicon"
+      rel="icon"
+      type="image/png"
+      href="/favicon-light.png"
+    />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
     <title>Mitra - Social Media App</title>
 
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem("mitra-theme");
-          var isDark =
+          const stored = localStorage.getItem("mitra-theme");
+
+          const isDark =
             stored === "dark" ||
             (stored !== "light" &&
               window.matchMedia("(prefers-color-scheme: dark)").matches);
 
+          const favicon = document.getElementById("app-favicon");
+
           if (isDark) {
             document.documentElement.classList.add("dark");
+            favicon.href = "/favicon-dark.png";
+          } else {
+            document.documentElement.classList.remove("dark");
+            favicon.href = "/favicon-light.png";
           }
         } catch (e) {}
       })();

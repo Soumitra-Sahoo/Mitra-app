@@ -2,10 +2,26 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useClerk } from "@clerk/clerk-react";
-import { Search, MessageCircle, Bell, Plus, ChevronDown, LogOut, User, Menu, X } from "lucide-react";
+import {
+  Search,
+  MessageCircle,
+  Bell,
+  Plus,
+  ChevronDown,
+  LogOut,
+  User,
+  Menu,
+  X,
+} from "lucide-react";
 import { assets } from "../assets/assets.js";
 
-const Header = ({ notificationCount, messageCount, sidebarOpen, setSidebarOpen, onOpenSearch }) => {
+const Header = ({
+  notificationCount,
+  messageCount,
+  sidebarOpen,
+  setSidebarOpen,
+  onOpenSearch,
+}) => {
   const user = useSelector((state) => state.user.value);
   const { signOut } = useClerk();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -32,7 +48,14 @@ const Header = ({ notificationCount, messageCount, sidebarOpen, setSidebarOpen, 
       </button>
 
       <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-        <img src={assets.logo} className="h-8" alt="Mitra" />
+        <img
+          src={
+            document.documentElement.classList.contains("dark")
+              ? assets.logoDark
+              : assets.logoLight
+          }
+          alt="Mitra"
+        />
       </Link>
 
       <button
@@ -41,7 +64,9 @@ const Header = ({ notificationCount, messageCount, sidebarOpen, setSidebarOpen, 
       >
         <Search className="size-4" />
         <span className="flex-1 text-left">Search people, hashtags...</span>
-        <kbd className="text-xs px-1.5 py-0.5 rounded bg-card border border-border text-muted">⌘K</kbd>
+        <kbd className="text-xs px-1.5 py-0.5 rounded bg-card border border-border text-muted">
+          ⌘K
+        </kbd>
       </button>
 
       <div className="ml-auto flex items-center gap-1.5 md:gap-2">
@@ -92,8 +117,14 @@ const Header = ({ notificationCount, messageCount, sidebarOpen, setSidebarOpen, 
             onClick={() => setShowDropdown((v) => !v)}
             className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full hover:bg-surface transition"
           >
-            <img src={user?.profile_picture} className="size-8 rounded-full object-cover" alt="" />
-            <span className="hidden lg:block text-sm font-medium">{user?.full_name}</span>
+            <img
+              src={user?.profile_picture}
+              className="size-8 rounded-full object-cover"
+              alt=""
+            />
+            <span className="hidden lg:block text-sm font-medium">
+              {user?.full_name}
+            </span>
             <ChevronDown className="size-3.5 text-foreground-secondary" />
           </button>
 

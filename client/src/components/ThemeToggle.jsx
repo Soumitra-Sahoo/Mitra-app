@@ -12,7 +12,7 @@ const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl transition-theme">
+    <div className="flex items-center gap-1 p-1 bg-surface rounded-xl transition-theme">
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}
@@ -22,8 +22,8 @@ const ThemeToggle = () => {
           aria-pressed={theme === value}
           className={`flex items-center justify-center size-8 rounded-lg transition ${
             theme === value
-              ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
-              : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              ? "bg-card text-primary shadow-sm"
+              : "text-muted hover:text-foreground-secondary"
           }`}
         >
           <Icon className="size-4" />

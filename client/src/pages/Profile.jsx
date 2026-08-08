@@ -20,19 +20,14 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
-  const [lightbox, setLightbox] = useState({
-    open: false,
-    images: [],
-    index: 0,
-  });
-  const handlePostDelete = (postId) => {
-  setPosts((prev) => prev.filter((p) => p._id !== postId));
-};
+  const [lightbox, setLightbox] = useState({ open: false, images: [], index: 0 });
 
-  const openLightbox = (images, index) =>
-    setLightbox({ open: true, images, index });
-  const closeLightbox = () =>
-    setLightbox({ open: false, images: [], index: 0 });
+  const handlePostDelete = (postId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
+  };
+
+  const openLightbox = (images, index) => setLightbox({ open: true, images, index });
+  const closeLightbox = () => setLightbox({ open: false, images: [], index: 0 });
 
   const fetchUserProfile = useCallback(
     async (id) => {
@@ -64,53 +59,38 @@ const Profile = () => {
     }
   }, [profileId, currentUser?._id]);
 
-  const likedPosts = user
-    ? posts.filter((post) => post.likes_count.includes(user._id))
-    : [];
+  const likedPosts = user ? posts.filter((post) => post.likes_count.includes(user._id)) : [];
   const allImages = posts.flatMap((post) => post.image_urls);
   if (!user) return <Loading />;
 
   return (
-    <div className="relative h-full overflow-y-scroll bg-gray-50 dark:bg-slate-950 p-6">
+    <div className="relative h-full overflow-y-scroll bg-background p-6">
       {lightbox.open && (
-        <Lightbox
-          images={lightbox.images}
-          startIndex={lightbox.index}
-          onClose={closeLightbox}
-        />
+        <Lightbox images={lightbox.images} startIndex={lightbox.index} onClose={closeLightbox} />
       )}
 
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden">
+        <div className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl border border-border overflow-hidden">
           <div className="relative h-64 md:h-80 overflow-hidden">
             {user.cover_photo ? (
-              <img
-                src={user.cover_photo}
-                className="absolute inset-0 w-full h-full object-cover"
-                alt="cover"
-              />
+              <img src={user.cover_photo} className="absolute inset-0 w-full h-full object-cover" alt="cover" />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200" />
+              <div className="absolute inset-0 bg-gradient-to-r from-gradient-start to-gradient-end opacity-30" />
             )}
           </div>
-          <UserProfileInfo
-            user={user}
-            posts={posts}
-            profileId={profileId}
-            setShowEdit={setShowEdit}
-          />
+          <UserProfileInfo user={user} posts={posts} profileId={profileId} setShowEdit={setShowEdit} />
         </div>
 
         <div className="mt-6">
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow p-1 flex max-w-md mx-auto">
+          <div className="bg-card rounded-lg shadow p-1 flex max-w-md mx-auto">
             {["posts", "media", "likes"].map((tab) => (
               <button
                 onClick={() => setActiveTab(tab)}
                 key={tab}
                 className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                   activeTab === tab
-                    ? "bg-indigo-600 text-white"
-                    : "text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100"
+                    ? "bg-primary text-white"
+                    : "text-foreground-secondary hover:text-foreground"
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -120,11 +100,9 @@ const Profile = () => {
 
           {activeTab === "posts" && (
             <div className="mt-6 flex flex-col items-center gap-6">
-              {posts.length === 0 && (
-                <p className="text-gray-500 dark:text-slate-400 mt-10">No posts yet</p>
-              )}
+              {posts.length === 0 && <p className="text-foreground-secondary mt-10">No posts yet</p>}
               {posts.map((post) => (
-                <PostCard key={post._id} post={post} onDelete={handlePostDelete}/>
+                <PostCard key={post._id} post={post} onDelete={handlePostDelete} />
               ))}
             </div>
           )}
@@ -132,7 +110,7 @@ const Profile = () => {
           {activeTab === "media" && (
             <div className="mt-6">
               {allImages.length === 0 ? (
-                <p className="text-gray-500 dark:text-slate-400 text-center mt-10">No media yet</p>
+                <p className="text-foreground-secondary text-center mt-10">No media yet</p>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {posts
@@ -148,7 +126,7 @@ const Profile = () => {
                       <div
                         key={i}
                         onClick={() => openLightbox(allImages, absIdx)}
-                        className="relative group cursor-pointer overflow-hidden rounded-xl aspect-square bg-slate-100 dark:bg-slate-800"
+                        className="relative group cursor-pointer overflow-hidden rounded-xl aspect-square bg-surface"
                       >
                         <img
                           src={image}
@@ -170,11 +148,9 @@ const Profile = () => {
 
           {activeTab === "likes" && (
             <div className="mt-6 flex flex-col items-center gap-6">
-              {likedPosts.length === 0 && (
-                <p className="text-gray-500 dark:text-slate-400 mt-10">No liked posts yet</p>
-              )}
+              {likedPosts.length === 0 && <p className="text-foreground-secondary mt-10">No liked posts yet</p>}
               {likedPosts.map((post) => (
-                <PostCard key={post._id} post={post} onDelete={handlePostDelete}/>
+                <PostCard key={post._id} post={post} onDelete={handlePostDelete} />
               ))}
             </div>
           )}

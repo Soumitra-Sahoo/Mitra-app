@@ -7,11 +7,26 @@ import api from "../api/axios.js";
 import { useNavigate } from "react-router-dom";
 
 const VISIBILITY_OPTIONS = [
-  { value: "public", label: "Public", description: "Anyone can see this post", Icon: Globe },
-  { value: "followers", label: "Followers", description: "Only your followers can see this post", Icon: Users },
-  { value: "private", label: "Private", description: "Only you can see this post", Icon: Lock },
+  {
+    value: "public",
+    label: "Public",
+    description: "Anyone can see this post",
+    Icon: Globe,
+  },
+  {
+    value: "followers",
+    label: "Followers",
+    description: "Only your followers can see this post",
+    Icon: Users,
+  },
+  {
+    value: "private",
+    label: "Private",
+    description: "Only you can see this post",
+    Icon: Lock,
+  },
 ];
-
+const MAX_IMAGES = 4;
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
@@ -24,9 +39,6 @@ const CreatePost = () => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  // Object URLs are created once per image list change and revoked when
-  // replaced/unmounted — calling URL.createObjectURL directly in JSX
-  // creates a fresh (unrevoked) blob URL on every render, which leaks.
   useEffect(() => {
     const urls = images.map((img) => URL.createObjectURL(img));
     setPreviews(urls);
@@ -34,43 +46,44 @@ const CreatePost = () => {
   }, [images]);
 
   const handleSubmit = async () => {
-  if (!images.length && !content) {
+  const trimmedContent = content.trim();
+  if (!images.length && !trimmedContent) {
     return toast.error("Please add at least one image or text");
   }
   setLoading(true);
 
   const postType =
-    images.length && content
+    images.length && trimmedContent
       ? "text_with_image"
       : images.length
         ? "image"
         : "text";
 
-  try {
-    const formData = new FormData();
-    formData.append("content", content);
-    formData.append("post_type", postType);
-    formData.append("visibility", visibility);
-    images.forEach((image) => {
-      formData.append("images", image);
-    });
+    try {
+      const formData = new FormData();
+      formData.append("content", trimmedContent);
+      formData.append("post_type", postType);
+      formData.append("visibility", visibility);
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
 
-    const token = await getToken();
-    const { data } = await api.post("/api/post/add", formData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const token = await getToken();
+      const { data } = await api.post("/api/post/add", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (data.success) {
-      navigate("/");
-    } else {
-      throw new Error(data.message);
+      if (data.success) {
+        navigate("/");
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    toast.error(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-full bg-background transition-theme">
@@ -79,7 +92,9 @@ const CreatePost = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Create Post
           </h1>
-          <p className="text-foreground-secondary">Share your thoughts with the world</p>
+          <p className="text-foreground-secondary">
+            Share your thoughts with the world
+          </p>
         </div>
 
         <div className="max-w-xl bg-card p-4 sm:p-8 rounded-xl shadow-md space-y-4">
@@ -90,8 +105,12 @@ const CreatePost = () => {
               alt=""
             />
             <div className="flex-1">
-              <h2 className="font-semibold text-foreground">{user.full_name}</h2>
-              <p className="text-sm text-foreground-secondary">@{user.username}</p>
+              <h2 className="font-semibold text-foreground">
+                {user.full_name}
+              </h2>
+              <p className="text-sm text-foreground-secondary">
+                @{user.username}
+              </p>
               <div className="relative inline-block mt-1">
                 <button
                   type="button"
@@ -99,7 +118,9 @@ const CreatePost = () => {
                   className="flex items-center gap-1 text-xs text-foreground-secondary hover:text-foreground bg-surface hover:bg-border rounded-full px-2.5 py-1 transition mt-0.5"
                 >
                   {(() => {
-                    const current = VISIBILITY_OPTIONS.find((o) => o.value === visibility);
+                    const current = VISIBILITY_OPTIONS.find(
+                      (o) => o.value === visibility,
+                    );
                     const Icon = current.Icon;
                     return (
                       <>
@@ -118,25 +139,31 @@ const CreatePost = () => {
                       onClick={() => setShowVisibilityMenu(false)}
                     />
                     <div className="absolute left-0 top-full mt-1 w-56 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden">
-                      {VISIBILITY_OPTIONS.map(({ value, label, description, Icon }) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => {
-                            setVisibility(value);
-                            setShowVisibilityMenu(false);
-                          }}
-                          className={`w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-surface transition ${
-                            visibility === value ? "bg-primary/10" : ""
-                          }`}
-                        >
-                          <Icon className="size-4 mt-0.5 text-primary flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{label}</p>
-                            <p className="text-xs text-muted">{description}</p>
-                          </div>
-                        </button>
-                      ))}
+                      {VISIBILITY_OPTIONS.map(
+                        ({ value, label, description, Icon }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => {
+                              setVisibility(value);
+                              setShowVisibilityMenu(false);
+                            }}
+                            className={`w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-surface transition ${
+                              visibility === value ? "bg-primary/10" : ""
+                            }`}
+                          >
+                            <Icon className="size-4 mt-0.5 text-primary flex-shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium text-foreground">
+                                {label}
+                              </p>
+                              <p className="text-xs text-muted">
+                                {description}
+                              </p>
+                            </div>
+                          </button>
+                        ),
+                      )}
                     </div>
                   </>
                 )}
@@ -157,11 +184,7 @@ const CreatePost = () => {
             <div className="flex flex-wrap gap-2 mt-4">
               {images.map((image, i) => (
                 <div key={i} className=" relative group">
-                  <img
-                    src={previews[i]}
-                    className="h-20 rounded-md"
-                    alt=""
-                  />
+                  <img src={previews[i]} className="h-20 rounded-md" alt="" />
                   <div
                     onClick={() =>
                       setImages(images.filter((_, index) => index !== i))
@@ -190,7 +213,21 @@ const CreatePost = () => {
               accept="image/*"
               hidden
               multiple
-              onChange={(e) => setImages([...images, ...e.target.files])}
+              onChange={(e) => {
+                const incoming = Array.from(e.target.files);
+                const combined = [...images, ...incoming];
+
+                if (combined.length > MAX_IMAGES) {
+                  toast.error(
+                    `You can upload up to ${MAX_IMAGES} images per post`,
+                  );
+                  setImages(combined.slice(0, MAX_IMAGES));
+                } else {
+                  setImages(combined);
+                }
+
+                e.target.value = "";
+              }}
             />
 
             <button

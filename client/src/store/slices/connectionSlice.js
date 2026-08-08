@@ -6,6 +6,8 @@ const initialState = {
     pendingConnections: [],
     followers: [],
     following: [],
+    status: "idle",
+    error: null,
 }
 
 export const fetchConnections = createAsyncThunk('connections/fetchConnections', async(token) => {
@@ -22,15 +24,28 @@ const connectionsSlice = createSlice({
 
     },
     extraReducers: (builder) => {
-        builder.addCase(fetchConnections.fulfilled, (state, action) => {
-            if(action.payload){
+    builder
+        .addCase(fetchConnections.pending, (state) => {
+            state.status = "loading";
+            state.error = null;
+        })
+        .addCase(fetchConnections.fulfilled, (state, action) => {
+            if (action.payload) {
                 state.connections = action.payload.connections;
                 state.pendingConnections = action.payload.pendingConnections;
                 state.followers = action.payload.followers;
                 state.following = action.payload.following;
+                state.status = "succeeded";
+            } else {
+                state.status = "failed";
+                state.error = "Failed to load connections";
             }
         })
-    }
+        .addCase(fetchConnections.rejected, (state, action) => {
+            state.status = "failed";
+            state.error = action.error.message || "Failed to load connections";
+        });
+}
 })
 
 export default connectionsSlice.reducer;

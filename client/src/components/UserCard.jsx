@@ -19,9 +19,7 @@ const UserCard = ({ user }) => {
       const { data } = await api.post(
         "/api/user/follow",
         { id: user._id },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       if (data.success) {
         toast.success(data.message);
@@ -43,9 +41,7 @@ const UserCard = ({ user }) => {
       const { data } = await api.post(
         "/api/user/connect",
         { id: user._id },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       if (data.success) {
         toast.success(data.message);
@@ -60,34 +56,32 @@ const UserCard = ({ user }) => {
   return (
     <div
       key={user._id}
-      className="w-full sm:w-[320px] p-5 flex flex-col justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border border-white/50 rounded-3xl shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300" >
+      className="w-full sm:w-[320px] p-5 flex flex-col justify-between bg-card/80 backdrop-blur-lg border border-border rounded-3xl shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
       <div className="text-center">
         <img
           src={user.profile_picture}
-          className="aspect-square object-cover rounded-full w-20 mx-auto border-4 border-white shadow-2xl"
+          className="aspect-square object-cover rounded-full w-20 mx-auto border-4 border-card shadow-2xl"
           alt=""
         />
-        <p className="mt-4 font-semibold">{user.full_name}</p>
+        <p className="mt-4 font-semibold text-foreground">{user.full_name}</p>
         {user.username && (
-          <p className="text-gray-500 dark:text-slate-400 font-light">@{user.username}</p>
+          <p className="text-foreground-secondary font-light">@{user.username}</p>
         )}
         {user.bio && (
-          <p className="text-gray-600 dark:text-slate-300 mt-2 text-center text-sm px-4">
-            {user.bio}
-          </p>
+          <p className="text-foreground-secondary mt-2 text-center text-sm px-4">{user.bio}</p>
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-4 text-xs text-gray-600 dark:text-slate-300">
-        <div className="flex items-center gap-1 border border-gray-300 dark:border-slate-600 rounded-full px-3 py-1">
+      <div className="flex items-center justify-center gap-2 mt-4 text-xs text-foreground-secondary">
+        <div className="flex items-center gap-1 border border-border rounded-full px-3 py-1">
           <MapPin className="size-4" /> {user.location}
         </div>
-        <div className="flex items-center gap-1 border border-gray-300 dark:border-slate-600 rounded-full px-3 py-1">
+        <div className="flex items-center gap-1 border border-border rounded-full px-3 py-1">
           <span>{user.followers.length}</span> Followers
         </div>
       </div>
       <div className="flex mt-4 gap-2">
-        {/* Follow Button */}
         <button
           onClick={handleFollow}
           disabled={currentUser?.following.includes(user._id)}
@@ -98,7 +92,7 @@ const UserCard = ({ user }) => {
         </button>
         <button
           onClick={handleConnectionReqest}
-          className="flex items-center justify-center w-14 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-200 group rounded-xl cursor-pointer active:scale-95 transition-all duration-300"
+          className="flex items-center justify-center w-14 bg-surface hover:bg-primary/10 text-foreground-secondary group rounded-xl cursor-pointer active:scale-95 transition-all duration-300"
         >
           {currentUser?.connections.includes(user._id) ? (
             <MessageCircle className="size-5 group-hover:scale-105 transition" />

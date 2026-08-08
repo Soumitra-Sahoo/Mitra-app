@@ -31,6 +31,25 @@ const typeIcon = (type) => {
   }
 };
 
+const describeNotification = (notif) => {
+  switch (notif.type) {
+    case "like":
+      return "liked your post";
+    case "comment":
+      return "commented on your post";
+    case "reply":
+      return "replied to a comment on your post";
+    case "follow":
+      return "started following you";
+    case "connection_request":
+      return "sent you a connection request";
+    case "connection_accepted":
+      return "accepted your connection request";
+    default:
+      return notif.message || "";
+  }
+};
+
 const NotifSkeleton = () => (
   <div className="flex items-center gap-3 p-4 bg-card rounded-2xl shadow-sm animate-pulse">
     <div className="size-11 rounded-full bg-border flex-shrink-0" />
@@ -147,7 +166,9 @@ const NotificationsPage = () => {
           {!loading && notifications.length === 0 && (
             <div className="text-center py-20">
               <Bell className="size-12 text-foreground-secondary mx-auto mb-4" />
-              <p className="text-foreground-secondary font-medium">No notifications yet</p>
+              <p className="text-foreground-secondary font-medium">
+                No notifications yet
+              </p>
               <p className="text-muted text-sm">
                 When people like, comment or follow you, it'll show up here
               </p>
@@ -179,9 +200,9 @@ const NotificationsPage = () => {
                   <span className="font-semibold">
                     {notif.sender_id?.full_name}
                   </span>{" "}
-                  {notif.message
-                    ?.replace(notif.sender_id?.full_name, "")
-                    .trim()}
+                  <span className="text-foreground-secondary">
+                    {describeNotification(notif)}
+                  </span>
                 </p>
                 {notif.post_id?.content && (
                   <p className="text-xs text-muted mt-0.5 truncate">

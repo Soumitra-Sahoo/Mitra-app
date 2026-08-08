@@ -7,9 +7,9 @@ import { checkGroupMembership } from "./groupController.js";
 const EDIT_WINDOW_MS = 10 * 60 * 1000;
 const DELETE_FOR_EVERYONE_WINDOW_MS = 60 * 60 * 1000;
 
-const connections = {};
+export const connections = {};
 
-const pushEvent = (userId, payload) => {
+export const pushEvent = (userId, payload) => {
   if (process.env.NODE_ENV !== "production") {
     console.log(
       `[pushEvent] type=${payload.type} to=${userId} connected?=${!!connections[userId]}`,
@@ -112,12 +112,10 @@ export const sendMessage = async (req, res) => {
           .json({ success: false, message: "Group not found" });
       }
       if (!check.isMember) {
-        return res
-          .status(403)
-          .json({
-            success: false,
-            message: "You're not a member of this group",
-          });
+        return res.status(403).json({
+          success: false,
+          message: "You're not a member of this group",
+        });
       }
       group = check.group;
     }
@@ -211,12 +209,10 @@ export const editMessage = async (req, res) => {
         .json({ success: false, message: "Message not found" });
     }
     if (message.from_user_id !== userId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You can only edit your own messages",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You can only edit your own messages",
+      });
     }
     if (message.message_type !== "text") {
       return res
@@ -229,12 +225,10 @@ export const editMessage = async (req, res) => {
         .json({ success: false, message: "This message was deleted" });
     }
     if (Date.now() - new Date(message.createdAt).getTime() > EDIT_WINDOW_MS) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Edit window has expired (10 minutes)",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Edit window has expired (10 minutes)",
+      });
     }
 
     message.text = text;
@@ -312,23 +306,19 @@ export const deleteMessageForEveryone = async (req, res) => {
         .json({ success: false, message: "Message not found" });
     }
     if (message.from_user_id !== userId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You can only delete your own messages for everyone",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own messages for everyone",
+      });
     }
     if (
       Date.now() - new Date(message.createdAt).getTime() >
       DELETE_FOR_EVERYONE_WINDOW_MS
     ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Delete window has expired (1 hour)",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Delete window has expired (1 hour)",
+      });
     }
 
     message.deleted_for_everyone = true;
@@ -393,7 +383,7 @@ export const forwardMessage = async (req, res) => {
     let successCount = 0;
 
     for (const to_user_id of to_user_ids) {
-      if (!(await isConnected(userId, to_user_id))) continue; // skip non-connections silently
+      if (!(await isConnected(userId, to_user_id))) continue;
 
       const message = await Message.create({
         from_user_id: userId,
@@ -436,17 +426,14 @@ export const forwardMessage = async (req, res) => {
     }
 
     if (successCount === 0) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "None of the selected recipients are valid",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "None of the selected recipients are valid",
+      });
     }
 
     res.json({ success: true, count: successCount });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -454,7 +441,12 @@ export const forwardMessage = async (req, res) => {
 export const getChatMessages = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const { to_user_id, group_id } = req.body;
+    const { to_user_id, group_id, before } = req.body;
+    const limit = 50;
+    const cursorFilter = before
+      ? { createdAt: { $lt: new Date(before) } }
+      : {};
+
     if (group_id) {
       const check = await checkGroupMembership(group_id, userId);
       if (!check.group) {
@@ -463,28 +455,34 @@ export const getChatMessages = async (req, res) => {
           .json({ success: false, message: "Group not found" });
       }
       if (!check.isMember) {
-        return res
-          .status(403)
-          .json({
-            success: false,
-            message: "You're not a member of this group",
-          });
+        return res.status(403).json({
+          success: false,
+          message: "You're not a member of this group",
+        });
       }
+
       const messages = await Message.find({
-        $or: [
-          { from_user_id: userId, to_user_id },
-          { from_user_id: to_user_id, to_user_id: userId },
-        ],
+        group_id,
         deleted_for: { $ne: userId },
+        ...cursorFilter,
       })
         .populate("from_user_id", "full_name profile_picture username")
         .populate("reply_to", "text message_type from_user_id media_url")
-        .sort({ createdAt: -1 });
-      await Message.updateMany(
-        { group_id, from_user_id: { $ne: userId } },
-        { $addToSet: { seen_by: userId } },
-      );
-      return res.json({ success: true, messages });
+        .sort({ createdAt: -1 })
+        .limit(limit);
+
+      if (!before) {
+        await Message.updateMany(
+          { group_id, from_user_id: { $ne: userId } },
+          { $addToSet: { seen_by: userId } },
+        );
+      }
+
+      return res.json({
+        success: true,
+        messages,
+        hasMore: messages.length === limit,
+      });
     }
 
     const messages = await Message.find({
@@ -493,16 +491,41 @@ export const getChatMessages = async (req, res) => {
         { from_user_id: to_user_id, to_user_id: userId },
       ],
       deleted_for: { $ne: userId },
+      ...cursorFilter,
     })
+      .populate("from_user_id", "full_name profile_picture username")
       .populate("reply_to", "text message_type from_user_id media_url")
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    if (!before) {
+      await Message.updateMany(
+        { from_user_id: to_user_id, to_user_id: userId },
+        { seen: true },
+      );
+      pushEvent(to_user_id, { type: "seen", by: userId });
+    }
+
+    res.json({
+      success: true,
+      messages,
+      hasMore: messages.length === limit,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getUserRecentMessages = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const messages = await Message.find({
+      to_user_id: userId,
+      deleted_for: { $ne: userId },
+    })
+      .populate("from_user_id to_user_id")
       .sort({ createdAt: -1 });
-    await Message.updateMany(
-      { from_user_id: to_user_id, to_user_id: userId },
-      { seen: true },
-    );
-
-    pushEvent(to_user_id, { type: "seen", by: userId });
-
     res.json({ success: true, messages });
   } catch (error) {
     console.log(error);
@@ -531,5 +554,3 @@ export const getUnreadMessageCount = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-export { connections, pushEvent };

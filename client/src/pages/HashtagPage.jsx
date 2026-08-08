@@ -7,17 +7,17 @@ import PostCard from "../components/PostCard";
 import { Hash, ArrowLeft } from "lucide-react";
 
 const PostSkeleton = () => (
-  <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 animate-pulse shadow w-full max-w-3xl">
+  <div className="bg-card rounded-3xl p-5 animate-pulse shadow w-full max-w-3xl">
     <div className="flex gap-3 items-center mb-4">
-      <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+      <div className="w-10 h-10 rounded-full bg-border" />
       <div className="space-y-2">
-        <div className="w-28 h-3 bg-slate-200 dark:bg-slate-700 rounded" />
-        <div className="w-20 h-3 bg-slate-100 dark:bg-slate-800 rounded" />
+        <div className="w-28 h-3 bg-border rounded" />
+        <div className="w-20 h-3 bg-surface rounded" />
       </div>
     </div>
-    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
-    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-4" />
-    <div className="h-52 bg-slate-200 dark:bg-slate-700 rounded-2xl" />
+    <div className="h-3 bg-border rounded mb-2" />
+    <div className="h-3 bg-border rounded w-3/4 mb-4" />
+    <div className="h-52 bg-border rounded-2xl" />
   </div>
 );
 
@@ -49,46 +49,37 @@ const HashtagPage = () => {
   }, [tag]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-950 transition-theme">
+    <div className="min-h-screen bg-background transition-theme">
       <div className="max-w-3xl mx-auto p-6">
-        {/* Header */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition mb-6"
+          className="flex items-center gap-2 text-foreground-secondary hover:text-foreground transition mb-6"
         >
           <ArrowLeft className="size-4" /> Back
         </button>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="size-14 bg-indigo-100 dark:bg-indigo-950/40 rounded-2xl flex items-center justify-center">
-            <Hash className="size-7 text-indigo-600" />
+          <div className="size-14 bg-primary/10 rounded-2xl flex items-center justify-center">
+            <Hash className="size-7 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">#{tag}</h1>
+            <h1 className="text-3xl font-bold text-foreground">#{tag}</h1>
             {!loading && (
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+              <p className="text-foreground-secondary text-sm mt-0.5">
                 {posts.length} {posts.length === 1 ? "post" : "posts"}
               </p>
             )}
           </div>
         </div>
 
-        {/* Posts */}
         <div className="flex flex-col items-center gap-6">
-          {loading &&
-            Array(3)
-              .fill(0)
-              .map((_, i) => <PostSkeleton key={i} />)}
+          {loading && Array(3).fill(0).map((_, i) => <PostSkeleton key={i} />)}
 
           {!loading && posts.length === 0 && (
             <div className="text-center py-20">
-              <Hash className="size-12 text-slate-200 dark:text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400 font-medium">
-                No posts with #{tag} yet
-              </p>
-              <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">
-                Be the first to post with this hashtag!
-              </p>
+              <Hash className="size-12 text-border mx-auto mb-4" />
+              <p className="text-foreground-secondary font-medium">No posts with #{tag} yet</p>
+              <p className="text-muted text-sm mt-1">Be the first to post with this hashtag!</p>
             </div>
           )}
 

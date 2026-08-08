@@ -13,6 +13,8 @@ import {
   Lock,
   MoreVertical,
   Bookmark,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import moment from "moment";
@@ -46,10 +48,7 @@ const VisibilityIcon = ({ visibility }) => {
   const Icon = visibility === "private" ? Lock : Users;
   const label = visibility === "private" ? "Private" : "Followers only";
   return (
-    <span
-      title={label}
-      className="inline-flex items-center gap-0.5 text-muted"
-    >
+    <span title={label} className="inline-flex items-center gap-0.5 text-muted">
       <Icon className="size-3" />
     </span>
   );
@@ -173,9 +172,7 @@ const CommentItem = ({
             onClick={handleLikeComment}
             className={`flex items-center gap-1 hover:text-danger transition ${liked ? "text-danger" : ""}`}
           >
-            <Heart
-              className={`size-3 ${liked ? "fill-rose text-rose" : ""}`}
-            />
+            <Heart className={`size-3 ${liked ? "fill-rose text-rose" : ""}`} />
             {likesCount > 0 && <span>{likesCount}</span>}
           </button>
           {depth === 0 && (
@@ -262,6 +259,7 @@ const PostModal = ({
   isBookmarked,
   onToggleBookmark,
 }) => {
+  const [imgIndex, setImgIndex] = useState(0);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -287,7 +285,6 @@ const PostModal = ({
     return () => {
       document.body.style.overflow = "";
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddComment = async () => {
@@ -360,16 +357,43 @@ const PostModal = ({
       >
         {/* Left: Images */}
         {post.image_urls?.length > 0 && (
-          <div className="md:w-1/2 bg-black flex items-center justify-center max-h-[50vh] md:max-h-none">
+          <div className="md:w-1/2 bg-black flex items-center justify-center max-h-[50vh] md:max-h-none relative">
             <img
-              src={post.image_urls[0]}
+              src={post.image_urls[imgIndex]}
               alt=""
               className="w-full h-full object-contain"
             />
+
+            {post.image_urls.length > 1 && (
+              <>
+                <button
+                  onClick={() =>
+                    setImgIndex(
+                      (i) =>
+                        (i - 1 + post.image_urls.length) %
+                        post.image_urls.length,
+                    )
+                  }
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 rounded-full p-2"
+                >
+                  <ChevronLeft className="size-5" />
+                </button>
+                <button
+                  onClick={() =>
+                    setImgIndex((i) => (i + 1) % post.image_urls.length)
+                  }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 rounded-full p-2"
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+                <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white/80 text-xs bg-black/40 px-2 py-0.5 rounded-full">
+                  {imgIndex + 1} / {post.image_urls.length}
+                </span>
+              </>
+            )}
           </div>
         )}
 
-        {/* Right: Info + Comments */}
         <div
           className={`flex flex-col flex-1 ${post.image_urls?.length > 0 ? "md:w-1/2" : "w-full"}`}
         >
@@ -503,7 +527,7 @@ const PostModal = ({
 
 const PostCard = ({ post, onDelete }) => {
   const [likes, setLikes] = useState(post.likes_count);
-  const [commentCount, setCommentCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(post.comment_count ?? 0);
   const [showModal, setShowModal] = useState(false);
   const [lightbox, setLightbox] = useState({ open: false, index: 0 });
 
@@ -516,6 +540,7 @@ const PostCard = ({ post, onDelete }) => {
   const { getToken } = useAuth();
 
   useEffect(() => {
+    if (post.comment_count !== undefined) return;
     const load = async () => {
       try {
         const token = await getToken();
@@ -526,7 +551,7 @@ const PostCard = ({ post, onDelete }) => {
       } catch (_) {}
     };
     load();
-  }, [post._id]);
+    }, [post._id]);
 
   const handleLike = async () => {
     try {
@@ -551,10 +576,14 @@ const PostCard = ({ post, onDelete }) => {
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/profile/${post.user._id}`;
+    const url = `${window.location.origin}/post/${post._id}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: post.user.full_name, url });
+        await navigator.share({
+          title: post.user.full_name,
+          text: post.content?.slice(0, 100),
+          url,
+        });
       } else {
         await navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard!");
@@ -577,7 +606,9 @@ const PostCard = ({ post, onDelete }) => {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (data.success) {
-        dispatch(setBookmarked({ postId: post._id, bookmarked: data.bookmarked }));
+        dispatch(
+          setBookmarked({ postId: post._id, bookmarked: data.bookmarked }),
+        );
       } else {
         toast.error(data.message);
       }
